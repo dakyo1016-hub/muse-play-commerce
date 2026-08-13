@@ -140,11 +140,25 @@ button:focus-visible { outline: 3px solid #2f7c72; outline-offset: 2px; }
 .screen-label { position: absolute; z-index: 5; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; color: #fff; font-size: 8px; font-weight: 900; letter-spacing: .12em; text-shadow: 1px 1px #000; }
 .avatar-stage { position: absolute; inset: 0; background: #0b0b0d url('/boutique-real.png') center/cover; overflow: hidden; }
 .avatar-stage::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.24), transparent 28%, transparent 72%, rgba(0,0,0,.25)); pointer-events: none; }
-.avatar-stage img { position: absolute; z-index: 2; height: 106%; width: 78%; left: 11%; top: -1%; object-fit: cover; object-position: center; mix-blend-mode: screen; filter: saturate(.92) contrast(1.1); }
-.garment-tint { position: absolute; z-index: 3; left: 37%; width: 27%; opacity: .28; mix-blend-mode: color; pointer-events: none; }
-.top-tint { top: 25%; height: 23%; clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%); }
-.bottom-tint { top: 47%; height: 39%; clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); }
-.blush-tint { position: absolute; z-index: 4; left: 48%; top: 16%; width: 6%; height: 2%; opacity: .45; filter: blur(5px); }
+.character-viewer { position: absolute; z-index: 2; inset: 0; }
+.character-canvas { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.character-canvas:active { cursor: grabbing; }
+.character-canvas canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.reference-character-viewer { display: grid; place-items: center; }
+.reference-character { position: absolute; left: 50%; top: 28px; bottom: 104px; width: 48%; translate: -50% 0; display: grid; place-items: center; overflow: visible; filter: drop-shadow(0 9px 12px rgba(28,19,24,.3)); }
+.avatar-body-transform { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
+.avatar-base-image { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; }
+.avatar-body-layer { position: absolute; inset: 0; transform: scaleX(var(--body-width)) scaleY(var(--body-height)); transform-origin: 50% 100%; transition: transform .2s ease; }
+.avatar-head-layer { position: absolute; inset: 0; z-index: 2; clip-path: inset(0 0 74% 0); transform: scaleY(var(--body-height)); transform-origin: 50% 100%; transition: transform .2s ease; animation: head-swap .18s ease-out; }
+@keyframes head-swap { from { opacity: .35; } to { opacity: 1; } }
+.model-loading { position: absolute; left: 50%; top: 50%; translate: -50% -50%; color: #fff; background: rgba(48,37,45,.78); padding: 8px 10px; font-size: 8px; font-weight: 900; letter-spacing: .12em; }
+.rotation-controls { position: absolute; z-index: 9; left: 50%; bottom: 86px; translate: -50% 0; display: grid; grid-template-columns: 29px auto 29px; align-items: center; gap: 5px; background: rgba(48,37,45,.82); border: 1px solid rgba(255,255,255,.7); padding: 4px; color: #fff; }
+.rotation-controls button { width: 27px; height: 25px; border: 0; background: var(--rose); color: #fff; cursor: pointer; font-size: 18px; line-height: 1; }
+.rotation-controls span { min-width: 90px; text-align: center; font-size: 6px; letter-spacing: .1em; }
+.rotation-controls b { font-size: 9px; }
+.outfit-mode-switch { position: absolute; z-index: 9; right: 10px; top: 27px; display: flex; gap: 3px; padding: 3px; background: rgba(48,37,45,.8); }
+.outfit-mode-switch button { border: 0; background: transparent; color: #fff; padding: 5px 7px; font-size: 7px; font-weight: 900; cursor: pointer; }
+.outfit-mode-switch button.active { background: var(--yellow); color: var(--ink); }
 .scanlines { position: absolute; z-index: 8; inset: 0; pointer-events: none; opacity: .12; background: repeating-linear-gradient(0deg, transparent 0 3px, #fff 3px 4px); }
 .dialogue-box { position: absolute; z-index: 10; left: 8px; right: 8px; bottom: 8px; min-height: 70px; display: grid; grid-template-columns: 46px 1fr 24px; align-items: center; gap: 9px; padding: 8px; background: rgba(255,250,247,.94); border: 3px solid #fff; border-radius: 44% 18px 18px 18px; box-shadow: 0 0 0 2px var(--rose); }
 .dialogue-box .portrait { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: var(--rose); color: #fff; font-size: 20px; }
@@ -156,6 +170,34 @@ button:focus-visible { outline: 3px solid #2f7c72; outline-offset: 2px; }
 .console-hinge i { width: 7px; height: 7px; background: #807a77; border-radius: 50%; }
 
 .console-bottom { display: grid; grid-template-columns: .72fr 1fr; gap: 12px; min-height: 218px; margin: 0 14px 14px; padding: 12px; background: #fbf8f5; border: 5px solid #605a59; }
+.avatar-editor { display: block; min-height: 300px; padding: 13px; }
+.editor-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+.editor-heading span { color: var(--rose); font-size: 8px; font-weight: 900; letter-spacing: .14em; }
+.editor-heading strong { font-size: 10px; }
+.editor-heading > div { display: flex; align-items: center; gap: 7px; }
+.editor-heading button { border: 1px solid var(--rose); background: #fff; color: var(--deep-rose); padding: 4px 6px; font-size: 7px; font-weight: 900; cursor: pointer; }
+.editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; padding-top: 10px; }
+.editor-section { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.editor-section > label { display: flex; justify-content: space-between; color: var(--muted); font-size: 8px; font-weight: 900; }
+.editor-section > label b { color: var(--deep-rose); }
+.number-field { display: flex; align-items: center; gap: 2px; color: var(--deep-rose); }
+.number-field input { width: 42px; border: 0; border-bottom: 1px solid var(--rose); background: transparent; color: var(--deep-rose); text-align: right; font-size: 8px; font-weight: 900; }
+.editor-section input[type="range"] { width: 100%; height: 4px; margin: 0 0 3px; accent-color: var(--rose); cursor: pointer; }
+.segmented-control { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 3px; }
+.segmented-control button { border: 1px solid var(--line); background: #fff; padding: 7px; color: var(--muted); font-size: 9px; font-weight: 900; cursor: pointer; }
+.segmented-control button.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+.body-shape-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 4px; }
+.body-shape-options button { border: 1px solid var(--line); background: #fff; color: var(--muted); padding: 6px 2px; font-size: 7px; font-weight: 900; cursor: pointer; }
+.body-shape-options button i { display: block; margin-bottom: 2px; color: var(--deep-rose); font: 900 13px/1 Georgia, serif; }
+.body-shape-options button.active { border-color: var(--rose); background: #fbedef; box-shadow: inset 0 -3px var(--rose); color: var(--ink); }
+.swatch-row { display: flex; gap: 6px; margin-bottom: 4px; }
+.swatch-row button { width: 23px; height: 23px; padding: 0; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--line); cursor: pointer; }
+.swatch-row button.active { box-shadow: 0 0 0 2px var(--rose); }
+.eye-swatches button { width: 20px; height: 20px; }
+.hair-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 4px; }
+.hair-options button { height: 38px; border: 1px solid var(--line); background: #fff; color: var(--muted); cursor: pointer; font-size: 9px; font-weight: 900; }
+.hair-options button i { display: block; color: var(--deep-rose); font-style: normal; font-size: 6px; letter-spacing: .08em; }
+.hair-options button.active { border-color: var(--rose); background: #fbedef; box-shadow: inset 0 -3px var(--rose); }
 .detail-preview { min-height: 176px; border: 1px solid rgba(48,37,45,.2); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; color: #fff; text-shadow: 1px 1px rgba(0,0,0,.6); }
 .detail-preview span { font-size: 8px; font-weight: 900; }
 .detail-preview strong { font: 900 22px/1 Georgia, serif; }
@@ -242,5 +284,6 @@ button:focus-visible { outline: 3px solid #2f7c72; outline-offset: 2px; }
   .product-list { grid-template-columns: 1fr; }
   .console-top { min-height: 355px; }
   .console-bottom { grid-template-columns: .8fr 1.2fr; }
+  .editor-grid { grid-template-columns: 1fr; }
   .detail-copy p { display: none; }
 }

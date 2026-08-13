@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import CharacterTurnaroundViewer from "./CharacterTurnaroundViewer";
 
 type Product = {
   id: string;
@@ -101,6 +102,29 @@ export default function Home() {
   const [liked, setLiked] = useState<string[]>(["lip"]);
   const [toast, setToast] = useState("");
   const [showShop, setShowShop] = useState(false);
+  const [outfitMode, setOutfitMode] = useState<"base" | "starter">("base");
+  const [gender, setGender] = useState<"female" | "male">("female");
+  const [height, setHeight] = useState(165);
+  const [weight, setWeight] = useState(55);
+  const [bodyShape, setBodyShape] = useState<"slender" | "average" | "athletic">("average");
+  const [skinTone, setSkinTone] = useState("#f0b485");
+  const [hairStyle, setHairStyle] = useState<1 | 2 | 3>(1);
+  const [hairColor, setHairColor] = useState("#8a321f");
+  const [eyeColor, setEyeColor] = useState("#43251f");
+  const [characterReset, setCharacterReset] = useState(0);
+
+  const restoreDefaultFemale = () => {
+    setGender("female");
+    setHeight(165);
+    setWeight(55);
+    setBodyShape("average");
+    setSkinTone("#f0b485");
+    setHairStyle(1);
+    setHairColor("#8a321f");
+    setEyeColor("#43251f");
+    setOutfitMode("base");
+    setCharacterReset((current) => current + 1);
+  };
 
   const focused = products.find((product) => product.id === focusedId) ?? products[0];
   const visibleProducts = category === "전체"
@@ -111,15 +135,13 @@ export default function Home() {
   const tagSet = new Set(equippedProducts.flatMap((product) => product.tags));
   const score = Math.min(100, 52 + tagSet.size * 7 + equippedProducts.length * 3);
 
-  const currentColors = useMemo(() => ({
-    top: products.find((product) => product.id === equipped.find((id) => products.find((item) => item.id === id)?.category === "상의"))?.color ?? "transparent",
-    bottom: products.find((product) => product.id === equipped.find((id) => products.find((item) => item.id === id)?.category === "하의"))?.color ?? "transparent",
-    beauty: equipped.includes("blush") ? "#ff8f7c" : "transparent",
-  }), [equipped]);
-
   const equip = (product: Product) => {
     setFocusedId(product.id);
+    if (product.category !== "뷰티") setOutfitMode("starter");
     setEquipped((current) => {
+      if (current.includes(product.id)) {
+        return current.filter((id) => id !== product.id);
+      }
       const withoutCategory = current.filter((id) => {
         const item = products.find((candidate) => candidate.id === id);
         return item?.category !== product.category;
@@ -240,35 +262,77 @@ export default function Home() {
             <div className="console-top">
               <div className="screen-label"><span>STYLE CAM</span><b>LOOK 07</b></div>
               <div className="avatar-stage">
-                <img src="/character-runtime.png" alt="레트로 저폴리 패션 캐릭터" />
-                <div className="garment-tint top-tint" style={{ background: currentColors.top }} />
-                <div className="garment-tint bottom-tint" style={{ background: currentColors.bottom }} />
-                <div className="blush-tint" style={{ background: currentColors.beauty }} />
+                <CharacterTurnaroundViewer
+                  key={`${gender}-${characterReset}`}
+                  character={gender === "female" ? "miyu" : "ren"}
+                  outfitMode={outfitMode}
+                  height={height}
+                  weight={weight}
+                  bodyShape={bodyShape}
+                  skinTone={skinTone}
+                  hairStyle={hairStyle}
+                  hairColor={hairColor}
+                  eyeColor={eyeColor}
+                />
+                <div className="outfit-mode-switch" role="group" aria-label="캐릭터 의상 레이어">
+                  <button className={outfitMode === "base" ? "active" : ""} onClick={() => setOutfitMode("base")}>기본 바디</button>
+                  <button className={outfitMode === "starter" ? "active" : ""} onClick={() => setOutfitMode("starter")}>스타터 룩</button>
+                </div>
                 <div className="scanlines" />
               </div>
               <div className="dialogue-box">
                 <span className="portrait">✦</span>
-                <p><b>미유</b> “첫 출근이지만, 내 취향도 살짝 보여주고 싶어!”</p>
+                <p><b>{gender === "male" ? "렌" : "미유"}</b> “내 체형과 취향에 꼭 맞는 스타일을 찾아볼래!”</p>
                 <button aria-label="다음 대화" onClick={() => notify("취향 힌트: 채도는 낮고 실루엣은 길게")}>›</button>
               </div>
             </div>
 
             <div className="console-hinge"><i /><i /><i /></div>
 
-            <div className="console-bottom">
-              <div className="detail-preview" style={{ background: focused.swatch }}>
-                <span>{focused.category}</span>
-                <strong>{focused.name.split(" ")[0]}</strong>
+            <div className="console-bottom avatar-editor">
+              <div className="editor-heading">
+                <span>MY AVATAR</span>
+                <div><strong>{gender === "male" ? "렌" : "미유"} · {height}cm · {weight}kg</strong><button onClick={restoreDefaultFemale}>기본 여성 복구</button></div>
               </div>
-              <div className="detail-copy">
-                <small>{focused.brand}</small>
-                <h2>{focused.name}</h2>
-                <p>{focused.description}</p>
-                <div className="detail-meta">
-                  <span className="color-chip" style={{ background: focused.color }} />
-                  {focused.tags.map((tag) => <span key={tag}>#{tag}</span>)}
-                </div>
-                <button onClick={() => equip(focused)}>{equipped.includes(focused.id) ? "착용 해제/변경" : "캐릭터에게 입히기"}</button>
+
+              <div className="editor-grid">
+                <section className="editor-section">
+                  <label>캐릭터</label>
+                  <div className="segmented-control">
+                    <button className={gender === "female" ? "active" : ""} onClick={() => { setGender("female"); setHeight(165); setWeight(55); setOutfitMode("base"); }}>여성</button>
+                    <button className={gender === "male" ? "active" : ""} onClick={() => { setGender("male"); setHeight(175); setWeight(70); setOutfitMode("base"); }}>남성</button>
+                  </div>
+
+                  <label htmlFor="height-range">키 <span className="number-field"><input aria-label="키 직접 입력" type="number" min="145" max="195" value={height} onChange={(event) => setHeight(Math.min(195, Math.max(145, Number(event.target.value))))} />cm</span></label>
+                  <input id="height-range" type="range" min="145" max="195" value={height} onChange={(event) => setHeight(Number(event.target.value))} />
+                  <label htmlFor="weight-range">몸무게 <span className="number-field"><input aria-label="몸무게 직접 입력" type="number" min="38" max="130" value={weight} onChange={(event) => setWeight(Math.min(130, Math.max(38, Number(event.target.value))))} />kg</span></label>
+                  <input id="weight-range" type="range" min="38" max="130" value={weight} onChange={(event) => setWeight(Number(event.target.value))} />
+                  <label>체형 골격 <b>{bodyShape === "slender" ? "슬렌더" : bodyShape === "athletic" ? "애슬레틱" : "평균"}</b></label>
+                  <div className="body-shape-options" role="group" aria-label="체형 골격 선택">
+                    <button className={bodyShape === "slender" ? "active" : ""} onClick={() => setBodyShape("slender")}><i>Ⅰ</i>슬렌더</button>
+                    <button className={bodyShape === "average" ? "active" : ""} onClick={() => setBodyShape("average")}><i>Ⅱ</i>평균</button>
+                    <button className={bodyShape === "athletic" ? "active" : ""} onClick={() => setBodyShape("athletic")}><i>Ⅲ</i>애슬레틱</button>
+                  </div>
+                </section>
+
+                <section className="editor-section appearance-options">
+                  <label>피부톤</label>
+                  <div className="swatch-row">
+                    {["#f8d2b1", "#f0b485", "#ca865e", "#8c563e", "#5b352b"].map((color) => <button key={color} className={skinTone === color ? "active" : ""} style={{ background: color }} aria-label={`피부톤 ${color}`} onClick={() => setSkinTone(color)} />)}
+                  </div>
+                  <label>헤어스타일</label>
+                  <div className="hair-options">
+                    {([1, 2, 3] as const).map((style) => <button key={style} className={hairStyle === style ? "active" : ""} onClick={() => setHairStyle(style)}><i>{style === 1 ? "CLASSIC" : style === 2 ? "SHORT" : "WAVE"}</i>{style}</button>)}
+                  </div>
+                  <label>머리 컬러</label>
+                  <div className="swatch-row">
+                    {["#2a211f", "#8a321f", "#c18448", "#e7c9a4", "#724d8d"].map((color) => <button key={color} className={hairColor === color ? "active" : ""} style={{ background: color }} aria-label={`머리 컬러 ${color}`} onClick={() => setHairColor(color)} />)}
+                  </div>
+                  <label>눈 컬러</label>
+                  <div className="swatch-row eye-swatches">
+                    {["#43251f", "#527254", "#496d8f", "#806042", "#685487"].map((color) => <button key={color} className={eyeColor === color ? "active" : ""} style={{ background: color }} aria-label={`눈 컬러 ${color}`} onClick={() => setEyeColor(color)} />)}
+                  </div>
+                </section>
               </div>
             </div>
           </div>
