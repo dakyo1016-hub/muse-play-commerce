@@ -68,6 +68,8 @@ export default function CharacterTurnaroundViewer({
             eyeColor={eyeColor}
             front={frame.file === "front"}
             bodyLayer
+            character={character}
+            baseOutfit={outfitMode === "base"}
             className="avatar-body-layer"
           />
           <TintedAvatarImage

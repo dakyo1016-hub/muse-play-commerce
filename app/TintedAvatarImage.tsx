@@ -10,6 +10,8 @@ type TintedAvatarImageProps = {
   front: boolean;
   headLayer?: boolean;
   bodyLayer?: boolean;
+  character?: "miyu" | "ren";
+  baseOutfit?: boolean;
   hairMaskSrc?: string;
   className?: string;
 };
@@ -19,7 +21,7 @@ const rgb = (hex: string) => {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 };
 
-export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, hairMaskSrc, className = "" }: TintedAvatarImageProps) {
+export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, character = "miyu", baseOutfit = false, hairMaskSrc, className = "" }: TintedAvatarImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -104,6 +106,24 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
           continue;
         }
 
+        // 밝은 피부톤에서도 기본 이너웨어가 사라져 보이지 않게
+        // 원본의 무채색 속옷 영역을 라벤더 그레이로 고정한다.
+        const isNeutralFabric = Math.max(r, g, b) - Math.min(r, g, b) < 28 && light > .48;
+        const isFemaleBra = character === "miyu" && ny > .19 && ny < .345;
+        const isFemaleShorts = character === "miyu" && ny > .405 && ny < .535;
+        const isMaleBoxers = character === "ren" && ny > .405 && ny < .58;
+        const isBaseUnderwear = baseOutfit && bodyLayer && isNeutralFabric
+          && (isFemaleBra || isFemaleShorts || isMaleBoxers);
+
+        if (isBaseUnderwear) {
+          const fabric = character === "miyu" ? [164, 149, 181] : [117, 130, 151];
+          const fabricShade = .58 + light * .48;
+          pixels.data[offset] = Math.min(255, fabric[0] * fabricShade);
+          pixels.data[offset + 1] = Math.min(255, fabric[1] * fabricShade);
+          pixels.data[offset + 2] = Math.min(255, fabric[2] * fabricShade);
+          continue;
+        }
+
         const target = isEye ? eye : isHair ? hair : isSkin ? skin : null;
         if (!target) continue;
         const shade = isEye ? .58 + light * .58 : isHair ? .28 + light * .9 : .35 + light * .82;
@@ -113,7 +133,7 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
       }
       context.putImageData(pixels, 0, 0);
     };
-  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, hairMaskSrc]);
+  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, character, baseOutfit, hairMaskSrc]);
 
   return <canvas ref={canvasRef} className={`avatar-base-image ${className}`} aria-hidden="true" />;
 }
