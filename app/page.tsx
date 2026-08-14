@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CharacterTurnaroundViewer from "./CharacterTurnaroundViewer";
 
 type Product = {
@@ -241,6 +241,9 @@ export default function Home() {
   const [friendVote, setFriendVote] = useState<"a" | "b" | null>(null);
   const [battleShared, setBattleShared] = useState(false);
   const [lookBudgetMode, setLookBudgetMode] = useState<"original" | "smart">("original");
+  const [closetReady, setClosetReady] = useState(false);
+  const [mainTab, setMainTab] = useState<"home" | "category" | "play" | "search" | "my">("home");
+  const [searchQuery, setSearchQuery] = useState("");
   const renderedStarterIds = new Set(["basictee", "cardigan", "denim", "pumps"]);
 
   const restoreDefaultFemale = () => {
@@ -280,6 +283,18 @@ export default function Home() {
   ] as const;
   const activeLookItems = lookBudgetMode === "original" ? originalLookItems : smartLookItems;
   const activeLookTotal = activeLookItems.reduce((sum, item) => sum + item[1], 0);
+  const styleDNA = [
+    { label: "SOFT", value: Math.min(96, 78 + liked.length * 2), color: "#d95d77" },
+    { label: "RETRO", value: Math.min(94, 67 + unlocked.length * 2), color: "#ad96bc" },
+    { label: "MINIMAL", value: Math.min(90, 60 + equippedProducts.length), color: "#79aaa0" },
+    { label: "ROMANTIC", value: Math.min(88, 54 + hairStyle * 2), color: "#f0a6b5" },
+  ];
+  const closetRecommendations = products.filter((product) => ["trench", "blouse", "sneakers"].includes(product.id));
+  const brandAliases: Record<string, string> = {
+    basictee: "MUSE ESSENTIAL", cardigan: "SÉRIE STUDIO", denim: "LAYERED SEOUL", skirt: "MOMENT EDITION",
+    pumps: "FORME", lip: "DEW LAB", blush: "DEW LAB", blouse: "ATELIER NINE", tee: "ORDINARY UNIT",
+    widepants: "STUDIO COLUMN", jacket: "ARCHIVE 101", trench: "CITY ÉTUDES", sneakers: "GROUND STANDARD",
+  };
   const visibleEquippedIds = outfitMode === "starter"
     ? new Set(["basictee", "cardigan", "denim", "pumps", ...equippedProducts.filter((product) => product.category === "뷰티").map((product) => product.id)])
     : new Set<string>();
@@ -340,14 +355,32 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("muse-digital-closet");
+      if (saved) {
+        const data = JSON.parse(saved) as { liked?: string[]; unlocked?: string[]; equipped?: string[] };
+        if (data.liked) setLiked(data.liked);
+        if (data.unlocked) setUnlocked(data.unlocked);
+        if (data.equipped) setEquipped(data.equipped);
+      }
+    } catch { /* Device-local personalization is optional in the prototype. */ }
+    setClosetReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!closetReady) return;
+    window.localStorage.setItem("muse-digital-closet", JSON.stringify({ liked, unlocked, equipped }));
+  }, [closetReady, liked, unlocked, equipped]);
+
   return (
-    <main className="app-shell">
+    <main className={`app-shell tab-${mainTab}`}>
       <header className="topbar">
         <div className="brand-lockup">
           <div className="pixel-logo" aria-hidden="true">M</div>
           <div>
-            <strong>MUSE MODE</strong>
-            <span>BEAUTY · FASHION PLAY</span>
+            <strong>MUSE SELECT</strong>
+            <span>MULTI-BRAND COMMERCE</span>
           </div>
         </div>
 
@@ -355,6 +388,10 @@ export default function Home() {
           <button className="active">코디 플레이</button>
           <button onClick={() => notify("뷰티 매칭은 다음 프로토타입에서 열려요")}>뷰티 매칭</button>
           <button onClick={() => notify(`찜한 상품 ${liked.length}개`) }>나의 옷장</button>
+        </nav>
+
+        <nav className="platform-nav" aria-label="MUSE SELECT 메인 메뉴">
+          {(["home", "category", "play", "search", "my"] as const).map((tab) => <button key={tab} className={mainTab === tab ? "active" : ""} onClick={() => setMainTab(tab)}>{tab.toUpperCase()}</button>)}
         </nav>
 
         <div className="commerce-journey" aria-label="쇼핑 경험 단계">
@@ -370,6 +407,52 @@ export default function Home() {
           <button className="coin" onClick={() => notify("게임 보유 코인 52,000")}>◉ 52,000</button>
         </div>
       </header>
+
+      {mainTab !== "play" && (
+        <section className={`commerce-portal portal-${mainTab}`}>
+          {mainTab === "home" && <>
+            <section className="commerce-hero">
+              <div><small>SEOUL · 29°C · HUMID</small><h1>오늘 뭐 입지?</h1><p>일교차와 실내 냉방까지 고려한<br />가벼운 여름 출근룩</p><button onClick={() => { setSceneGroup("work"); setMainTab("play"); }}>출근룩 추천 보기 →</button></div>
+              <div className="hero-look"><span>WEATHER CURATION</span><strong>LIGHT<br />OFFICE</strong><small>12 ITEMS · FROM 39,000</small></div>
+            </section>
+
+            <section className="portal-section">
+              <div className="portal-heading"><div><small>DISCOVER</small><h2>TRENDING LOOKS</h2></div><button onClick={() => setMainTab("play")}>전체 코디 보기 →</button></div>
+              <div className="trending-look-grid">{[
+                ["루미", "FRIDAY OFFICE", "#bba2ca", "92"], ["하나", "RAINY MINIMAL", "#7ba9a7", "89"], ["소라", "CITY ROMANTIC", "#714a70", "87"], ["재인", "WEEKEND LAYER", "#8f756e", "86"],
+              ].map(([name, label, color, scoreValue]) => <article key={name} onClick={() => setMainTab("play")}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><small>{label}</small><strong>{name}의 LOOK</strong><span>{scoreValue} STYLE · ♡ 저장</span></article>)}</div>
+            </section>
+
+            <section className="today-challenge-card">
+              <div><small>TODAY&apos;S CHALLENGE</small><h2>갑자기 잡힌 금요일 소개팅</h2><p>150,000원 안에서 첫인상과 편안함을 모두 잡아주세요.</p><span><b>8,241명</b> 참여 · 오늘 자정 마감</span></div>
+              <button onClick={() => { setSceneGroup("date"); setSceneExample(0); setMainTab("play"); }}>PLAY →</button>
+            </section>
+
+            <section className="portal-section">
+              <div className="portal-heading"><div><small>COMMERCE</small><h2>SHOP THE WINNERS</h2></div><span>이번 주 사람들이 가장 많이 산 코디</span></div>
+              <div className="winner-product-grid">{[
+                ["SUMMER OFFICE", "271,000원", "4 ITEMS", "#bba2ca"], ["JEJU WEEKEND", "198,000원", "3 ITEMS", "#7ba9a7"], ["GALLERY DATE", "146,000원", "4 ITEMS", "#d69aac"],
+              ].map(([name, price, count, color]) => <article key={name}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><div><small>WEEKLY TOP LOOK</small><strong>{name}</strong><span>{count} · {price}</span><button onClick={() => setShowShop(true)}>이 룩 사기 →</button></div></article>)}</div>
+            </section>
+
+            <section className="portal-section closet-home-section">
+              <div className="portal-heading"><div><small>PERSONALIZED BY YOUR PLAY</small><h2>FOR YOUR CLOSET</h2></div><button onClick={() => setMainTab("my")}>옷장 분석 보기 →</button></div>
+              <p className="closet-advice">다경님은 최근 스커트 저장이 늘었어요. 가지고 있는 하의와 잘 어울리는 가벼운 아우터를 추천해요.</p>
+              <div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>코디해보기</button></article>)}</div>
+            </section>
+          </>}
+
+          {mainTab === "category" && <section className="portal-page-block"><div className="portal-heading"><div><small>MULTI-BRAND CATALOG</small><h1>상품 탐색</h1></div><span>{products.length}개 데모 상품 · PLAY 연동</span></div><div className="portal-product-grid">{products.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span><div><button onClick={() => setLiked((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])}>♡ 찜하기</button><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>✨ 이 아이템으로 코디하기</button></div></article>)}</div></section>}
+
+          {mainTab === "search" && <section className="portal-page-block search-page"><small>SEARCH</small><h1>무드와 상황으로 찾아보세요</h1><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="상품, 브랜드, 소개팅룩, 장마 메이크업 검색" /><div className="popular-searches"><b>지금 많이 찾는 검색어</b>{["여름 출근룩", "15만원 소개팅", "장마 메이크업", "발레코어", "제주 여행"].map((term) => <button key={term} onClick={() => setSearchQuery(term)}>#{term}</button>)}</div><div className="search-result-note">{searchQuery ? `“${searchQuery}”에 맞는 상품과 Scene을 함께 보여드려요.` : "검색어를 입력하면 상품과 코디 미션을 함께 탐색할 수 있어요."}</div></section>}
+
+          {mainTab === "my" && <section className="portal-page-block digital-closet-page">
+            <div className="portal-heading"><div><small>MY DIGITAL CLOSET</small><h1>다경님 옷장 분석</h1></div><div className="closet-stat-chips"><span>구매·해금 <b>{unlocked.length}</b></span><span>찜 <b>{liked.length}</b></span><span>최근 착용 <b>{equipped.length}</b></span></div></div>
+            <div className="digital-closet-grid"><article className="style-dna-card"><small>2 WEEKS OF PLAY</small><h2>YOUR STYLE DNA</h2>{styleDNA.map((style) => <div key={style.label}><span>{style.label}</span><i><b style={{ width: `${style.value}%`, background: style.color }} /></i><strong>{style.value}</strong></div>)}</article><article className="closet-analysis-card"><small>CLOSET BALANCE</small><h2>취향은 선명하고, 아우터가 부족해요</h2><div><span>BLACK <b>31%</b></span><span>MINIMAL <b>27%</b></span><span>FEMININE <b>24%</b></span></div><p>최근 스커트와 로맨틱 상의를 자주 저장했어요. 가지고 있는 옷에 매치하기 쉬운 간절기 아우터가 필요해요.</p></article><article className="closet-data-card"><small>CONNECTED DATA</small><h2>플레이가 취향 데이터가 됩니다</h2><ul><li>실제 구매·장바구니</li><li>찜한 상품과 선호 브랜드</li><li>자주 착용한 컬러·실루엣</li><li>사이즈와 반품 이력</li></ul></article></div>
+            <div className="portal-heading closet-next-heading"><div><small>PEOPLE WITH YOUR TASTE SAVED</small><h2>가지고 있는 옷과 잘 어울리는 상품</h2></div></div><div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>내 옷과 코디</button></article>)}</div>
+          </section>}
+        </section>
+      )}
 
       <section className="mission-strip">
         <div>
@@ -449,7 +532,7 @@ export default function Home() {
                     <span>{product.category === "뷰티" ? "BEAUTY" : product.category}</span>
                   </div>
                   <div className="product-info">
-                    <small>{product.brand}</small>
+                    <small>{brandAliases[product.id] ?? product.brand}</small>
                     <h2>{product.name}</h2>
                     <div className="mini-tags">{product.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>
                     <em className="stock-count">재고 {product.stock}개</em>
@@ -672,6 +755,12 @@ export default function Home() {
             ].map((entry) => <article key={entry.rank} className="vote-card"><span className="rank">#{entry.rank}</span><div className="look-mini" style={{ "--look-color": entry.palette } as React.CSSProperties}><i /><i /></div><div><small>{entry.label}</small><h3>{entry.name}의 코디</h3><p><b>{entry.score} STYLE</b> · ♥ {(entry.votes + (voted && entry.rank === 1 ? 1 : 0)).toLocaleString()}</p></div><button disabled={voted} onClick={() => { setVoted(true); notify("커뮤니티 점수에 투표가 반영됐어요 · +20 COIN"); }}>{voted ? "투표 완료" : "커뮤니티 투표"}</button></article>)}
           </div>
         </div>
+      </section>
+
+      <section className="brand-campaign" aria-labelledby="brand-campaign-title">
+        <div className="brand-campaign-hero"><small>BRAND CHALLENGE PLATFORM</small><h2 id="brand-campaign-title">NEW BALANCE<br />STYLE WEEK</h2><p>뉴발란스 신제품을 활용해<br />여름 서울 데일리룩을 만들어주세요.</p><button onClick={() => notify("브랜드 챌린지에 현재 코디로 참여했어요")}>브랜드 챌린지 참여 →</button></div>
+        <div className="campaign-rewards"><small>CAMPAIGN REWARD</small><div><span>🏆 1등</span><strong>신제품 증정</strong></div><div><span>🏆 TOP 10</span><strong>10만원 쿠폰</strong></div><p>브랜드는 광고 배너가 아니라 실제 상품으로 창작 미션을 개최합니다.</p></div>
+        <div className="campaign-results"><small>LIVE CAMPAIGN RESULT</small><div>{[["참여자","5,382명"],["생성된 코디","4,921개"],["상품 클릭","31,220회"],["구매","1,048건"]].map(([label,value]) => <span key={label}><small>{label}</small><strong>{value}</strong></span>)}</div><p>참여율 · PDP 진입 · UGC · 구매 전환을 한 캠페인에서 측정</p></div>
       </section>
 
       <section className="friend-battle" aria-labelledby="friend-battle-title">
