@@ -1165,6 +1165,25 @@ button:focus-visible { outline: 3px solid #2f7c72; outline-offset: 2px; }
 .shop-look-hero > div > small,.shop-look-hero > div > span { color:#765886; }
 .shop-look-hero p { color:#687580; }
 .shop-grid article.selected .try-button,.quick-avatar button.active { border-color:#647d91; background:#647d91; }
+.create-toolbar > div button { display:flex; align-items:center; gap:7px; }
+.create-toolbar > div button small { display:grid; place-items:center; min-width:18px; height:18px; padding:0 4px; border:1px solid #d7dfe4; border-radius:20px; color:#75828b; font-size:6px; }
+.create-toolbar > div button.active small { border-color:rgba(255,255,255,.45); color:#fff; }
+.product-thumb { --product-color:#9aa6ad; position:relative; display:grid; place-items:center; aspect-ratio:1/1.06; margin-bottom:12px; overflow:hidden; background:color-mix(in srgb,var(--product-color) 27%,#f8fafb); }
+.product-thumb::before { content:""; position:absolute; inset:0; opacity:.33; pointer-events:none; }
+.product-thumb > span { position:absolute; z-index:2; left:9px; bottom:8px; padding:5px 7px; border:1px solid rgba(255,255,255,.75); background:rgba(255,255,255,.86); color:#43515b; font-size:6px; font-weight:900; letter-spacing:.09em; }
+.product-art { position:relative; z-index:1; display:block; width:44%; height:53%; background:var(--product-color); filter:drop-shadow(0 9px 8px rgba(53,65,73,.18)); }
+.category-outer .product-art { width:58%; height:62%; clip-path:polygon(20% 0,40% 8%,50% 4%,60% 8%,80% 0,100% 22%,84% 48%,77% 34%,78% 100%,53% 100%,50% 18%,47% 100%,22% 100%,23% 34%,16% 48%,0 22%); }
+.category-top .product-art { width:54%; height:52%; clip-path:polygon(24% 0,40% 8%,60% 8%,76% 0,100% 20%,84% 45%,76% 31%,75% 100%,25% 100%,24% 31%,16% 45%,0 20%); }
+.category-bottom .product-art { width:48%; height:62%; clip-path:polygon(8% 0,92% 0,100% 100%,58% 100%,50% 35%,42% 100%,0 100%); }
+.category-dress .product-art { width:52%; height:68%; clip-path:polygon(30% 0,70% 0,78% 18%,100% 100%,0 100%,22% 18%); }
+.category-shoes .product-art { width:64%; height:28%; margin-top:22%; border-radius:65% 18% 22% 30%; clip-path:polygon(6% 15%,36% 5%,55% 43%,93% 65%,100% 100%,0 100%); }
+.category-bag .product-art { width:55%; height:44%; margin-top:12%; border-radius:8px 8px 14px 14px; clip-path:polygon(17% 16%,27% 0,73% 0,83% 16%,100% 22%,94% 100%,6% 100%,0 22%); }
+.category-acc .product-art { width:47%; height:47%; border:14px solid var(--product-color); border-radius:50%; background:transparent; }
+.pattern-stripe .product-art { background:repeating-linear-gradient(90deg,var(--product-color) 0 12px,color-mix(in srgb,var(--product-color) 56%,white) 12px 20px); }
+.pattern-check .product-art { background:conic-gradient(from 90deg at 1px 1px,var(--product-color) 25%,color-mix(in srgb,var(--product-color) 55%,white) 0 50%,var(--product-color) 0 75%,color-mix(in srgb,var(--product-color) 55%,white) 0) 0 0/18px 18px; }
+.pattern-washed .product-art { background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--product-color) 58%,white),transparent 33%),linear-gradient(145deg,color-mix(in srgb,var(--product-color) 76%,black),var(--product-color)); }
+.pattern-nylon .product-art { background:linear-gradient(115deg,color-mix(in srgb,var(--product-color) 78%,white),var(--product-color) 48%,color-mix(in srgb,var(--product-color) 82%,black)); }
+.category-acc.pattern-stripe .product-art,.category-acc.pattern-check .product-art,.category-acc.pattern-washed .product-art,.category-acc.pattern-nylon .product-art { background:transparent; }
 .shop-look-list article.swapped { background:#eef3f7; }
 .flow-toast { background:#647d91; box-shadow:4px 4px 0 #cbb5d6; }
 .miyu-stage { min-height:500px; background:linear-gradient(165deg,#f7f8fa,#edf2f6); }

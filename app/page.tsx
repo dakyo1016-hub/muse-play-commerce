@@ -9,6 +9,8 @@ type Category = "ALL" | "OUTER" | "TOP" | "BOTTOM" | "DRESS" | "SHOES" | "BAG" |
 type Item = {
   id: string;
   category: Exclude<Category, "ALL">;
+  kind: string;
+  pattern: "solid" | "stripe" | "check" | "washed" | "nylon";
   brand: string;
   name: string;
   price: number;
@@ -17,18 +19,57 @@ type Item = {
 };
 
 const items: Item[] = [
-  { id: "cardigan", category: "OUTER", brand: "MORNING DEW", name: "Muted Lilac Cardigan", price: 49000, likes: "2.1K", color: "#b9a0c9" },
-  { id: "jacket", category: "OUTER", brand: "RECTO", name: "Linen Crop Jacket", price: 129000, likes: "3.8K", color: "#b9ad9c" },
-  { id: "top", category: "TOP", brand: "SÉRIE STUDIO", name: "Ivory Layered Top", price: 49000, likes: "1.8K", color: "#eee7dc" },
-  { id: "shirt", category: "TOP", brand: "ATELIER NINE", name: "Sheer Pocket Shirt", price: 72000, likes: "1.2K", color: "#afc4bf" },
-  { id: "denim", category: "BOTTOM", brand: "BLUE HOUR", name: "Indigo Bootcut Denim", price: 69000, likes: "4.2K", color: "#34476f" },
-  { id: "skirt", category: "BOTTOM", brand: "MOMENT EDITION", name: "Soft Pleats Skirt", price: 89000, likes: "2.7K", color: "#78617f" },
-  { id: "dress", category: "DRESS", brand: "ARCHIVE 101", name: "Bias Slip Dress", price: 139000, likes: "3.1K", color: "#a86f7f" },
-  { id: "pumps", category: "SHOES", brand: "STEP BY STEP", name: "Square Pumps", price: 58000, likes: "2.4K", color: "#76a29a" },
-  { id: "sneakers", category: "SHOES", brand: "GROUND STANDARD", name: "Cream Platform Sneakers", price: 64000, likes: "5.1K", color: "#d7d0c4" },
-  { id: "bag", category: "BAG", brand: "MARGE SHERWOOD", name: "Soft Baguette Bag", price: 89000, likes: "6.8K", color: "#413a3b" },
-  { id: "mini-bag", category: "BAG", brand: "FORME", name: "Mint Mini Boston Bag", price: 59000, likes: "1.9K", color: "#9fbdb5" },
-  { id: "necklace", category: "ACC", brand: "NUMBERING", name: "Curve Chain Necklace", price: 39000, likes: "2.6K", color: "#d7bd76" },
+  { id: "cardigan", category: "OUTER", kind: "CARDIGAN", pattern: "solid", brand: "MORNING DEW", name: "Muted Lilac Cardigan", price: 49000, likes: "2.1K", color: "#b9a0c9" },
+  { id: "jacket", category: "OUTER", kind: "CROP JACKET", pattern: "solid", brand: "RECTO", name: "Linen Crop Jacket", price: 129000, likes: "3.8K", color: "#b9ad9c" },
+  { id: "leather-blouson", category: "OUTER", kind: "BLOUSON", pattern: "washed", brand: "NORTH OF CITY", name: "Washed Vegan Leather Blouson", price: 158000, likes: "7.4K", color: "#5d4a43" },
+  { id: "windbreaker", category: "OUTER", kind: "WINDBREAKER", pattern: "nylon", brand: "STILL ACTIVE", name: "Light Nylon Windbreaker", price: 89000, likes: "5.6K", color: "#849589" },
+  { id: "hood-zipup", category: "OUTER", kind: "HOOD ZIP-UP", pattern: "washed", brand: "COMMON PROJECT", name: "Vintage Wash Hood Zip-Up", price: 79000, likes: "9.2K", color: "#77797d" },
+  { id: "tweed-jacket", category: "OUTER", kind: "TWEED", pattern: "check", brand: "LE PETIT ATELIER", name: "Soft Tweed Collar Jacket", price: 149000, likes: "3.3K", color: "#c7b8a9" },
+  { id: "trench", category: "OUTER", kind: "TRENCH", pattern: "solid", brand: "ORDINARY OFFICE", name: "Light Single Trench Coat", price: 169000, likes: "4.7K", color: "#a99983" },
+
+  { id: "top", category: "TOP", kind: "LAYERED TOP", pattern: "solid", brand: "SÉRIE STUDIO", name: "Ivory Layered Top", price: 49000, likes: "1.8K", color: "#eee7dc" },
+  { id: "shirt", category: "TOP", kind: "SHEER SHIRT", pattern: "nylon", brand: "ATELIER NINE", name: "Sheer Pocket Shirt", price: 72000, likes: "1.2K", color: "#afc4bf" },
+  { id: "graphic-tee", category: "TOP", kind: "GRAPHIC TEE", pattern: "washed", brand: "PUBLIC RECORD", name: "Archive Graphic T-Shirt", price: 39000, likes: "8.9K", color: "#484b50" },
+  { id: "rib-tank", category: "TOP", kind: "SLEEVELESS", pattern: "stripe", brand: "SECOND SKIN", name: "Ribbed Square Sleeveless", price: 32000, likes: "4.1K", color: "#d6c7b7" },
+  { id: "polo-knit", category: "TOP", kind: "POLO KNIT", pattern: "stripe", brand: "MAISON 27", name: "Open Collar Stripe Knit", price: 69000, likes: "6.2K", color: "#7892a1" },
+  { id: "oxford-shirt", category: "TOP", kind: "OXFORD SHIRT", pattern: "solid", brand: "STUDIO BASIC", name: "Relaxed Oxford Shirt", price: 59000, likes: "7.8K", color: "#b3c6d5" },
+  { id: "sweatshirt", category: "TOP", kind: "SWEATSHIRT", pattern: "washed", brand: "SUNDAY SERVICE", name: "Pigment Logo Sweatshirt", price: 65000, likes: "9.8K", color: "#8b7d75" },
+  { id: "mesh-top", category: "TOP", kind: "MESH TOP", pattern: "nylon", brand: "AFTER IMAGE", name: "Layered Mesh Long Sleeve", price: 54000, likes: "2.9K", color: "#8e7d9a" },
+
+  { id: "denim", category: "BOTTOM", kind: "BOOTCUT DENIM", pattern: "washed", brand: "BLUE HOUR", name: "Indigo Bootcut Denim", price: 69000, likes: "4.2K", color: "#34476f" },
+  { id: "skirt", category: "BOTTOM", kind: "PLEATS SKIRT", pattern: "solid", brand: "MOMENT EDITION", name: "Soft Pleats Skirt", price: 89000, likes: "2.7K", color: "#78617f" },
+  { id: "cargo-pants", category: "BOTTOM", kind: "CARGO PANTS", pattern: "washed", brand: "UTILITY CLUB", name: "Wide Pocket Cargo Pants", price: 79000, likes: "8.4K", color: "#727663" },
+  { id: "bermuda", category: "BOTTOM", kind: "BERMUDA", pattern: "solid", brand: "MONO YARD", name: "Two Tuck Bermuda Shorts", price: 59000, likes: "5.3K", color: "#67676b" },
+  { id: "parachute-skirt", category: "BOTTOM", kind: "CARGO SKIRT", pattern: "nylon", brand: "ROUTE 03", name: "Parachute String Maxi Skirt", price: 76000, likes: "6.8K", color: "#869088" },
+  { id: "slacks", category: "BOTTOM", kind: "WIDE SLACKS", pattern: "solid", brand: "ORDINARY OFFICE", name: "Relaxed Wide Slacks", price: 82000, likes: "7.1K", color: "#3e4148" },
+  { id: "curve-denim", category: "BOTTOM", kind: "CURVE DENIM", pattern: "washed", brand: "FADED BLUE", name: "Washed Curve Denim Pants", price: 85000, likes: "10.2K", color: "#71859b" },
+  { id: "track-pants", category: "BOTTOM", kind: "TRACK PANTS", pattern: "stripe", brand: "STILL ACTIVE", name: "Side Line Jersey Pants", price: 68000, likes: "6.5K", color: "#485552" },
+
+  { id: "dress", category: "DRESS", kind: "SLIP DRESS", pattern: "solid", brand: "ARCHIVE 101", name: "Bias Slip Dress", price: 139000, likes: "3.1K", color: "#a86f7f" },
+  { id: "mini-dress", category: "DRESS", kind: "MINI DRESS", pattern: "solid", brand: "MELLOW ROOM", name: "Square Neck Mini Dress", price: 89000, likes: "5.5K", color: "#454750" },
+  { id: "cargo-dress", category: "DRESS", kind: "CARGO DRESS", pattern: "nylon", brand: "UTILITY CLUB", name: "Parachute Cargo Dress", price: 99000, likes: "4.9K", color: "#858b83" },
+  { id: "shirt-dress", category: "DRESS", kind: "SHIRT DRESS", pattern: "stripe", brand: "ATELIER NINE", name: "Pin Stripe Shirt Dress", price: 119000, likes: "3.7K", color: "#91a6b0" },
+  { id: "knit-dress", category: "DRESS", kind: "KNIT DRESS", pattern: "solid", brand: "MAISON 27", name: "Soft Rib Knit Maxi Dress", price: 108000, likes: "6.3K", color: "#8f8179" },
+
+  { id: "pumps", category: "SHOES", kind: "PUMPS", pattern: "solid", brand: "STEP BY STEP", name: "Square Pumps", price: 58000, likes: "2.4K", color: "#76a29a" },
+  { id: "sneakers", category: "SHOES", kind: "PLATFORM", pattern: "solid", brand: "GROUND STANDARD", name: "Cream Platform Sneakers", price: 64000, likes: "5.1K", color: "#d7d0c4" },
+  { id: "retro-runner", category: "SHOES", kind: "RETRO RUNNER", pattern: "washed", brand: "PACE MAKER", name: "Silver Mesh Retro Runner", price: 109000, likes: "11.2K", color: "#9ca1a4" },
+  { id: "loafer", category: "SHOES", kind: "LOAFER", pattern: "solid", brand: "OFFICE HOURS", name: "Classic Penny Loafer", price: 98000, likes: "7.9K", color: "#4a3833" },
+  { id: "sandal", category: "SHOES", kind: "SANDAL", pattern: "solid", brand: "STEP BY STEP", name: "Platform Strap Sandal", price: 72000, likes: "4.6K", color: "#83726c" },
+  { id: "derby", category: "SHOES", kind: "DERBY", pattern: "washed", brand: "GROUND STANDARD", name: "Soft Suede Derby Shoes", price: 119000, likes: "6.7K", color: "#8a6f58" },
+
+  { id: "bag", category: "BAG", kind: "SHOULDER BAG", pattern: "solid", brand: "MARGE SHERWOOD", name: "Soft Baguette Bag", price: 89000, likes: "6.8K", color: "#413a3b" },
+  { id: "mini-bag", category: "BAG", kind: "BOSTON BAG", pattern: "solid", brand: "FORME", name: "Mint Mini Boston Bag", price: 59000, likes: "1.9K", color: "#9fbdb5" },
+  { id: "crossbody", category: "BAG", kind: "CROSSBODY", pattern: "nylon", brand: "UTILITY CLUB", name: "Nylon Pocket Crossbody", price: 65000, likes: "8.1K", color: "#525b59" },
+  { id: "tote", category: "BAG", kind: "TOTE BAG", pattern: "stripe", brand: "SUNDAY SERVICE", name: "Heavy Canvas Market Tote", price: 42000, likes: "5.8K", color: "#b7a98c" },
+  { id: "backpack", category: "BAG", kind: "BACKPACK", pattern: "nylon", brand: "ROUTE 03", name: "Utility String Backpack", price: 89000, likes: "9.4K", color: "#626a70" },
+
+  { id: "necklace", category: "ACC", kind: "NECKLACE", pattern: "solid", brand: "NUMBERING", name: "Curve Chain Necklace", price: 39000, likes: "2.6K", color: "#d7bd76" },
+  { id: "ball-cap", category: "ACC", kind: "BALL CAP", pattern: "washed", brand: "PUBLIC RECORD", name: "Washed Lettering Ball Cap", price: 39000, likes: "8.7K", color: "#5c6370" },
+  { id: "bucket-hat", category: "ACC", kind: "BUCKET HAT", pattern: "nylon", brand: "ROUTE 03", name: "Light Nylon Bucket Hat", price: 45000, likes: "4.3K", color: "#8c948e" },
+  { id: "belt", category: "ACC", kind: "BELT", pattern: "solid", brand: "OFFICE HOURS", name: "Slim Leather Belt", price: 42000, likes: "6.1K", color: "#4d3831" },
+  { id: "earrings", category: "ACC", kind: "EARRINGS", pattern: "solid", brand: "NUMBERING", name: "Mini Silver Hoop Earrings", price: 48000, likes: "5.9K", color: "#b9bdc0" },
+  { id: "scarf", category: "ACC", kind: "SCARF", pattern: "check", brand: "FORME", name: "Pattern Silky Mini Scarf", price: 35000, likes: "3.8K", color: "#9c7282" },
 ];
 
 const categories: Category[] = ["ALL", "OUTER", "TOP", "BOTTOM", "DRESS", "SHOES", "BAG", "ACC"];
@@ -147,9 +188,9 @@ export default function Home() {
 
       {screen === "create" && <section className="create-screen">
         <div className="screen-heading"><div><small>CREATE LOOK</small><h1>쇼핑하듯 탐색하고,<br />룩으로 조합하세요.</h1></div><p>실제 커머스의 상품 정보가 스타일링 인터페이스로 연결됩니다.</p></div>
-        <div className="create-toolbar"><div>{categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div><aside>{["PRICE","COLOR","BRAND","STYLE","POPULAR ↓"].map((filter) => <button key={filter} onClick={() => notify(`${filter} 필터를 적용했어요`)}>{filter}</button>)}</aside></div>
+          <div className="create-toolbar"><div>{categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><span>{item}</span><small>{item === "ALL" ? items.length : items.filter((product) => product.category === item).length}</small></button>)}</div><aside>{["PRICE","COLOR","BRAND","STYLE","POPULAR ↓"].map((filter) => <button key={filter} onClick={() => notify(`${filter} 필터를 적용했어요`)}>{filter}</button>)}</aside></div>
         <div className="create-layout">
-          <section className="shop-items"><div className="shop-items-title"><span>SHOP ITEMS</span><b>{visibleItems.length} PRODUCTS</b></div><div className="shop-grid">{visibleItems.map((item) => { const selected = selectedIds.includes(item.id); return <article key={item.id} className={selected ? "selected" : ""}><button className="product-like" onClick={() => notify(`${item.name}을 찜했어요`)}>♡ {item.likes}</button><i style={{ background:item.color }} /><small>{item.brand}</small><h3>{item.name}</h3><strong>{won(item.price)}</strong><button className="try-button" onClick={() => toggleItem(item)}>{selected ? "REMOVE" : "TRY ON"}</button></article>; })}</div></section>
+          <section className="shop-items"><div className="shop-items-title"><span>SHOP ITEMS</span><b>{visibleItems.length} PRODUCTS</b></div><div className="shop-grid">{visibleItems.map((item) => { const selected = selectedIds.includes(item.id); return <article key={item.id} className={selected ? "selected" : ""}><button className="product-like" onClick={() => notify(`${item.name}을 찜했어요`)}>♡ {item.likes}</button><div className={`product-thumb category-${item.category.toLowerCase()} pattern-${item.pattern}`} style={{ "--product-color":item.color } as React.CSSProperties}><i className="product-art" /><span>{item.kind}</span></div><small>{item.brand}</small><h3>{item.name}</h3><strong>{won(item.price)}</strong><button className="try-button" onClick={() => toggleItem(item)}>{selected ? "REMOVE" : "TRY ON"}</button></article>; })}</div></section>
           <aside className="look-builder"><div className="builder-top"><div><span>STYLE VIEW</span><button className={createMode === "avatar" ? "active" : ""} onClick={() => setCreateMode("avatar")}>STYLE MODEL</button><button className={createMode === "moodboard" ? "active" : ""} onClick={() => setCreateMode("moodboard")}>FLAT LAY</button></div><small>AUTOSAVED</small></div>
             {createMode === "moodboard" ? (
               <div className="moodboard-canvas"><em>FRIDAY · SEONGSU · 7PM</em>{selectedItems.map((item,index) => <div key={item.id} className={`mood-product mood-product-${index % 6}`}><i style={{ background:item.color }} /><span>{item.category}</span></div>)}<strong>FIRST<br />DATE</strong></div>
