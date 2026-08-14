@@ -201,6 +201,19 @@ const challenges = [
   { id: "guest", icon: "♧", title: "웨딩 하객룩", brief: "단정하지만 기억에 남게", reward: "뷰티 기프트 세트", tags: ["클래식", "오피스"], entrants: 211 },
 ];
 
+const sceneCommerce = [
+  { id: "work", icon: "💼", label: "WORK", examples: ["첫 출근", "면접", "중요한 PT", "회식"], sponsor: "MUSE BIZ", mission: "중요한 PT에서 신뢰감을 주는 15만원 이하 룩", budget: "150,000원 이하", slots: ["재킷", "이너", "팬츠", "슈즈"] },
+  { id: "date", icon: "💕", label: "DATE", examples: ["소개팅", "첫 데이트", "기념일", "전시회"], sponsor: "DATE PICK", mission: "20만원 이하 여름 소개팅룩", budget: "200,000원 이하", slots: ["상의", "하의", "슈즈", "립"] },
+  { id: "travel", icon: "✈️", label: "TRAVEL", examples: ["제주", "도쿄", "파리", "휴양지"], sponsor: "CITY MUSE", mission: "사진과 활동성을 모두 잡은 제주 2박 3일 룩", budget: "250,000원 이하", slots: ["아우터", "상의", "하의", "슈즈"] },
+  { id: "event", icon: "🎉", label: "EVENT", examples: ["결혼식", "돌잔치", "졸업식", "페스티벌"], sponsor: "MUSE ARCHIVE", mission: "단정하지만 기억에 남는 여름 하객룩", budget: "300,000원 이하", slots: ["원피스", "아우터", "슈즈", "백"] },
+  { id: "weather", icon: "🌦", label: "WEATHER", examples: ["장마", "폭염", "첫눈", "큰 일교차"], sponsor: "WEATHER LAB", mission: "비와 습도에도 쾌적한 장마 출근룩", budget: "180,000원 이하", slots: ["방수 아우터", "상의", "하의", "슈즈"] },
+  { id: "culture", icon: "🎵", label: "CULTURE", examples: ["콘서트", "야구장", "전시", "클럽"], sponsor: "LIVE CLUB", mission: "오래 서 있어도 편한 콘서트 포토존 룩", budget: "220,000원 이하", slots: ["상의", "하의", "슈즈", "액세서리"] },
+  { id: "campus", icon: "🏫", label: "CAMPUS", examples: ["개강", "축제", "발표", "MT"], sponsor: "CAMPUS WEEK", mission: "개강 첫 주 호감도를 높이는 데일리 룩", budget: "120,000원 이하", slots: ["상의", "하의", "슈즈", "백"] },
+  { id: "lifestyle", icon: "🏃", label: "LIFESTYLE", examples: ["러닝", "필라테스", "카페", "피크닉"], sponsor: "MOVE DAILY", mission: "운동 후 카페까지 자연스러운 애슬레저 룩", budget: "160,000원 이하", slots: ["탑", "레깅스", "아우터", "슈즈"] },
+  { id: "beauty", icon: "💄", label: "BEAUTY", examples: ["소개팅 메이크업", "출근 메이크업", "여름 지속력", "톤온톤 메이크업"], sponsor: "BEAUTY CURATION", mission: "장마철에도 안 무너지는 출근 메이크업", budget: "100,000원 이하", slots: ["파운데이션", "픽서", "마스카라", "립"] },
+  { id: "trend", icon: "🎬", label: "TREND", examples: ["드라마 속 스타일", "셀럽 무드", "Y2K", "발레코어"], sponsor: "MUSE TREND LAB", mission: "이번 주 검색 급상승 발레코어 룩", budget: "240,000원 이하", slots: ["탑", "스커트", "슈즈", "헤어"] },
+] as const;
+
 export default function Home() {
   const [category, setCategory] = useState<(typeof categories)[number]>("전체");
   const [equipped, setEquipped] = useState<string[]>(["basictee", "cardigan", "denim", "pumps"]);
@@ -223,6 +236,11 @@ export default function Home() {
   const [voted, setVoted] = useState(false);
   const [purchased, setPurchased] = useState(false);
   const [unlocked, setUnlocked] = useState<string[]>(["basictee"]);
+  const [sceneGroup, setSceneGroup] = useState("work");
+  const [sceneExample, setSceneExample] = useState(0);
+  const [friendVote, setFriendVote] = useState<"a" | "b" | null>(null);
+  const [battleShared, setBattleShared] = useState(false);
+  const [lookBudgetMode, setLookBudgetMode] = useState<"original" | "smart">("original");
   const renderedStarterIds = new Set(["basictee", "cardigan", "denim", "pumps"]);
 
   const restoreDefaultFemale = () => {
@@ -246,8 +264,22 @@ export default function Home() {
   const total = equippedProducts.reduce((sum, product) => sum + product.price * (quantities[product.id] ?? 1), 0);
   const pieceCount = equippedProducts.reduce((sum, product) => sum + (quantities[product.id] ?? 1), 0);
   const tagSet = new Set(equippedProducts.flatMap((product) => product.tags));
-  const score = Math.min(100, 52 + tagSet.size * 7 + equippedProducts.length * 3);
+  const themeScore = Math.min(100, 88 + tagSet.size * 3);
+  const communityScore = voted ? 96 : 82;
+  const stylingScore = Math.min(100, 82 + equippedProducts.length * 3);
+  const discoveryScore = Math.min(100, 76 + new Set(equippedProducts.map((product) => product.brand)).size * 4);
+  const totalStyleScore = Math.round(themeScore * .35 + communityScore * .30 + stylingScore * .20 + discoveryScore * .15);
+  const stars = (value: number) => `${"★".repeat(Math.round(value / 20))}${"☆".repeat(5 - Math.round(value / 20))}`;
   const challenge = challenges.find((item) => item.id === challengeId) ?? challenges[0];
+  const activeScene = sceneCommerce.find((scene) => scene.id === sceneGroup) ?? sceneCommerce[0];
+  const originalLookItems = [
+    ["상의", 59000], ["스커트", 79000], ["슈즈", 109000], ["립", 24000],
+  ] as const;
+  const smartLookItems = [
+    ["무드 유사 상의", 32000], ["플레어 스커트", 42000], ["슈즈", 49000], ["립", 17000],
+  ] as const;
+  const activeLookItems = lookBudgetMode === "original" ? originalLookItems : smartLookItems;
+  const activeLookTotal = activeLookItems.reduce((sum, item) => sum + item[1], 0);
   const visibleEquippedIds = outfitMode === "starter"
     ? new Set(["basictee", "cardigan", "denim", "pumps", ...equippedProducts.filter((product) => product.category === "뷰티").map((product) => product.id)])
     : new Set<string>();
@@ -290,6 +322,22 @@ export default function Home() {
   const notify = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2400);
+  };
+
+  const shareFriendBattle = async () => {
+    const shareData = {
+      title: "MUSE MODE · FRIEND BATTLE",
+      text: `누가 ${activeScene.examples[sceneExample]}에 더 잘 입었어? 다경의 LOOK vs 친구의 LOOK`,
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      setBattleShared(true);
+      notify("친구 대결 링크를 공유했어요 · 외부 투표가 열렸어요");
+    } catch {
+      notify("공유가 취소됐어요");
+    }
   };
 
   return (
@@ -504,10 +552,16 @@ export default function Home() {
 
         <aside className="summary-panel panel">
           <div className="score-card">
-            <div className="score-ring" style={{ "--score": `${score * 3.6}deg` } as React.CSSProperties}>
-              <span><b>{score}</b>/100</span>
+            <div className="score-ring" style={{ "--score": `${totalStyleScore * 3.6}deg` } as React.CSSProperties}>
+              <span><b>{totalStyleScore}</b>/100</span>
             </div>
-            <div><small>THEME MATCH</small><h2>{score >= 88 ? "SWEET!" : "GOOD LOOK"}</h2><p>테마 태그 {tagSet.size}개 매칭</p></div>
+            <div className="style-score-copy"><small>STYLE SCORE</small><h2>{totalStyleScore} STYLE</h2><p>인기보다 상황과 조합을 함께 평가해요</p></div>
+            <div className="score-factors" aria-label="스타일 점수 요약">
+              <span><b>상황 적합도</b><i>{stars(themeScore)}</i></span>
+              <span><b>컬러 조화</b><i>{stars(stylingScore)}</i></span>
+              <span><b>유저 반응</b><i>{stars(communityScore)}</i></span>
+            </div>
+            <small className="score-method">THEME 35 · COMMUNITY 30 · STYLE 20 · DISCOVERY 15</small>
           </div>
 
           <section className="outfit-summary">
@@ -557,6 +611,28 @@ export default function Home() {
       )}
 
       <section className="challenge-hub discovery-feed" aria-labelledby="challenge-title">
+        <div className="scene-commerce-header">
+          <div><span>SCENE COMMERCE</span><h2>상황이 상품 큐레이션이 되는 곳</h2></div>
+          <p>브랜드와 MD가 미션·예산·필수 아이템을 설계하고, 고객은 조건에 맞는 상품을 조합해 출품합니다.</p>
+        </div>
+        <div className="scene-category-grid" role="tablist" aria-label="상황별 쇼핑 카테고리">
+          {sceneCommerce.map((scene) => (
+            <button key={scene.id} role="tab" aria-selected={sceneGroup === scene.id} className={sceneGroup === scene.id ? "active" : ""} onClick={() => { setSceneGroup(scene.id); setSceneExample(0); setVoted(false); }}>
+              <i>{scene.icon}</i><b>{scene.label}</b><small>{scene.examples.length} SCENES</small>
+            </button>
+          ))}
+        </div>
+        <div className="scene-detail-shell">
+          <div className="scene-example-list" role="group" aria-label={`${activeScene.label} 세부 상황`}>
+            {activeScene.examples.map((example, index) => <button key={example} className={sceneExample === index ? "active" : ""} onClick={() => setSceneExample(index)}>{example}</button>)}
+          </div>
+          <article className="sponsored-mission">
+            <div className="mission-owner"><small>BRAND MISSION BY</small><b>{activeScene.sponsor}</b><span>기업·브랜드가 직접 설계한 상품 큐레이션</span></div>
+            <div className="mission-core"><small>{activeScene.icon} {activeScene.label} · {activeScene.examples[sceneExample]}</small><h3>{activeScene.mission}</h3><div><b>예산 조건</b><span>{activeScene.budget}</span></div></div>
+            <div className="mission-slots"><small>필수 조합</small><div>{activeScene.slots.map((slot, index) => <span key={slot}><i>{index + 1}</i>{slot}</span>)}</div></div>
+            <div className="mission-actions"><button onClick={() => notify(`${activeScene.mission} 조건에 맞는 상품만 불러왔어요`)}>조건 상품만 보기</button><button onClick={() => { setPurchased(false); setVoted(false); notify(`${activeScene.examples[sceneExample]} 미션 코디를 시작했어요`); }}>이 미션으로 코디 시작 →</button></div>
+          </article>
+        </div>
         <div className="challenge-heading">
           <div><span>STYLE CHALLENGE</span><h2 id="challenge-title">상황별 코디 배틀</h2></div>
           <p>실제 상품으로 코디를 만들고, 마음에 드는 룩에 투표해요. 우승자는 선물을 받고 다른 사용자는 룩을 그대로 쇼핑할 수 있어요.</p>
@@ -571,17 +647,41 @@ export default function Home() {
             <strong>1등 선물 · {challenge.reward}</strong>
             <button onClick={() => notify(`${challenge.title}에 현재 코디를 출품했어요`)}>내 코디 출품하기</button>
           </article>
+          <section className="winner-commerce" aria-label="이번 주 1위 룩 구매">
+            <div className="winner-look-visual"><span>🏆 이번 주 1위</span><div className="look-mini" style={{ "--look-color": "#bba2ca" } as React.CSSProperties}><i /><i /></div><strong>SUMMER<br />OFFICE LOOK</strong><small>92 STYLE SCORE</small></div>
+            <div className="winner-look-shop">
+              <div className="look-price-switch" role="group" aria-label="원본 또는 합리적 가격의 유사 룩">
+                <button className={lookBudgetMode === "original" ? "active" : ""} onClick={() => setLookBudgetMode("original")}><small>ORIGINAL</small>27만원 원본</button>
+                <i>→</i>
+                <button className={lookBudgetMode === "smart" ? "active" : ""} onClick={() => setLookBudgetMode("smart")}><small>SMART MATCH</small>14만원으로 비슷하게</button>
+              </div>
+              <div className="winner-item-list">{activeLookItems.map(([name, price]) => <div key={name}><span>{name}</span><b>{won(price)}</b></div>)}</div>
+              <div className="winner-total"><span>TOTAL</span><strong>{won(activeLookTotal)}</strong></div>
+              <div className="winner-actions"><button onClick={() => setShowShop(true)}>전체 구매</button><button onClick={() => { setLookBudgetMode("smart"); notify("같은 무드의 15만원 이하 상품으로 교체했어요"); }}>비슷한 룩 15만원 이하로 만들기</button></div>
+            </div>
+          </section>
           <div className="vote-board">
             <article className="buyable-look">
               <div><small>SHOP THE WINNING LOOK</small><strong>루나의 제주 선셋 룩</strong><span>가디건 · 데님 · 펌프스 · 립 틴트</span></div>
               <div><b>214,000원</b><button onClick={() => setShowShop(true)}>이 룩 그대로 구매하기 →</button></div>
             </article>
             {[
-              { rank: 1, name: "루미", votes: 1284, palette: "#bba2ca", label: "SOFT OFFICE" },
-              { rank: 2, name: "하나", votes: 1137, palette: "#7ba9a7", label: "MINT RETRO" },
-              { rank: 3, name: "소라", votes: 986, palette: "#714a70", label: "PLUM CLASSIC" },
-            ].map((entry) => <article key={entry.rank} className="vote-card"><span className="rank">#{entry.rank}</span><div className="look-mini" style={{ "--look-color": entry.palette } as React.CSSProperties}><i /><i /></div><div><small>{entry.label}</small><h3>{entry.name}의 코디</h3><p>♥ {(entry.votes + (voted && entry.rank === 1 ? 1 : 0)).toLocaleString()}</p></div><button disabled={voted} onClick={() => { setVoted(true); notify("1위 후보에게 투표했어요 · +20 COIN"); }}>{voted ? "투표 완료" : "투표"}</button></article>)}
+              { rank: 1, name: "루미", score: 92, votes: 1284, palette: "#bba2ca", label: "SOFT OFFICE" },
+              { rank: 2, name: "하나", score: 89, votes: 1137, palette: "#7ba9a7", label: "MINT RETRO" },
+              { rank: 3, name: "소라", score: 87, votes: 986, palette: "#714a70", label: "PLUM CLASSIC" },
+            ].map((entry) => <article key={entry.rank} className="vote-card"><span className="rank">#{entry.rank}</span><div className="look-mini" style={{ "--look-color": entry.palette } as React.CSSProperties}><i /><i /></div><div><small>{entry.label}</small><h3>{entry.name}의 코디</h3><p><b>{entry.score} STYLE</b> · ♥ {(entry.votes + (voted && entry.rank === 1 ? 1 : 0)).toLocaleString()}</p></div><button disabled={voted} onClick={() => { setVoted(true); notify("커뮤니티 점수에 투표가 반영됐어요 · +20 COIN"); }}>{voted ? "투표 완료" : "커뮤니티 투표"}</button></article>)}
           </div>
+        </div>
+      </section>
+
+      <section className="friend-battle" aria-labelledby="friend-battle-title">
+        <div className="friend-battle-heading"><div><span>FRIEND BATTLE</span><h2 id="friend-battle-title">친구에게 코디 대결 신청</h2></div><p>링크를 받은 친구는 가입 전에도 A/B 룩에 투표하고, 결과에서 상품을 바로 볼 수 있어요.</p></div>
+        <div className="battle-card">
+          <div className="battle-topic"><small>이번 대결 주제</small><strong>{activeScene.examples[sceneExample]} LOOK</strong><span>“누가 더 {activeScene.examples[sceneExample]}에 잘 입었어?”</span></div>
+          <article className={friendVote === "a" ? "battle-look selected" : "battle-look"}><b>A</b><div className="look-mini" style={{ "--look-color": "#bba2ca" } as React.CSSProperties}><i /><i /></div><div><small>MY LOOK</small><strong>다경의 LOOK</strong><span>{friendVote === "a" ? "12표" : "11표"}</span></div><button disabled={!!friendVote} onClick={() => setFriendVote("a")}>{friendVote === "a" ? "내 선택" : "A 투표"}</button></article>
+          <strong className="battle-vs">VS</strong>
+          <article className={friendVote === "b" ? "battle-look selected" : "battle-look"}><b>B</b><div className="look-mini" style={{ "--look-color": "#7ba9a7" } as React.CSSProperties}><i /><i /></div><div><small>FRIEND LOOK</small><strong>친구의 LOOK</strong><span>{friendVote === "b" ? "10표" : "9표"}</span></div><button disabled={!!friendVote} onClick={() => setFriendVote("b")}>{friendVote === "b" ? "내 선택" : "B 투표"}</button></article>
+          <div className="battle-share"><small>{battleShared ? "외부 투표 진행 중" : "친구를 초대하면 대결 시작"}</small><button onClick={shareFriendBattle}>카카오톡 · 인스타로 링크 공유 →</button></div>
         </div>
       </section>
 
