@@ -244,6 +244,7 @@ export default function Home() {
   const [closetReady, setClosetReady] = useState(false);
   const [mainTab, setMainTab] = useState<"home" | "category" | "play" | "search" | "my">("home");
   const [searchQuery, setSearchQuery] = useState("");
+  const [playStep, setPlayStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const renderedStarterIds = new Set(["basictee", "cardigan", "denim", "pumps"]);
 
   const restoreDefaultFemale = () => {
@@ -391,7 +392,7 @@ export default function Home() {
         </nav>
 
         <nav className="platform-nav" aria-label="MUSE SELECT 메인 메뉴">
-          {(["home", "category", "play", "search", "my"] as const).map((tab) => <button key={tab} className={mainTab === tab ? "active" : ""} onClick={() => setMainTab(tab)}>{tab.toUpperCase()}</button>)}
+          {(["home", "category", "play", "search", "my"] as const).map((tab) => <button key={tab} className={mainTab === tab ? "active" : ""} onClick={() => { setMainTab(tab); if (tab === "play") setPlayStep(1); }}>{tab.toUpperCase()}</button>)}
         </nav>
 
         <div className="commerce-journey" aria-label="쇼핑 경험 단계">
@@ -408,48 +409,83 @@ export default function Home() {
         </div>
       </header>
 
+      {mainTab === "play" && (
+        <section className="play-flow-shell">
+          <nav className="play-flow-nav" aria-label="PLAY 데모 단계">
+            {(["PLAY HOME", "CREATE LOOK", "RESULT", "VOTE", "WINNER", "SHOP THE LOOK"] as const).map((label, index) => <button key={label} className={playStep === index + 1 ? "active" : playStep > index + 1 ? "done" : ""} onClick={() => setPlayStep((index + 1) as 1 | 2 | 3 | 4 | 5 | 6)}><i>{String(index + 1).padStart(2,"0")}</i><span>{label}</span></button>)}
+          </nav>
+
+          {playStep === 1 && <section className="play-home-screen">
+            <div className="play-home-hero"><div><small>TODAY&apos;S CHALLENGE</small><h1>금요일 저녁,<br />성수 소개팅</h1><p>첫인상은 선명하게, 오래 걸어도 편안하게.<br /><b>150,000원</b> 안에서 코디하세요.</p><span><b>8,421명</b> 참여 · 오늘 자정 마감</span><button onClick={() => setPlayStep(2)}>코디 만들기 →</button></div><div className="challenge-poster"><span>FRIDAY<br />FIRST DATE</span><small>SEONGSU · 19:30</small></div></div>
+            <div className="play-home-modules">{[
+              ["TRENDING LOOKS","실시간 인기 코디","05"],["BRAND CHALLENGE","신제품으로 만드는 미션","01"],["FRIEND BATTLE","친구와 A/B 코디 대결","12"],["BEAUTY PLAY","상황별 메이크업 조합","08"],
+            ].map(([title,desc,count], index) => <button key={title} onClick={() => setPlayStep(index === 2 ? 4 : index === 0 ? 5 : 2)}><small>{count} LIVE</small><strong>{title}</strong><span>{desc}</span><i>→</i></button>)}</div>
+          </section>}
+
+          {playStep === 2 && <section className="create-look-screen">
+            <div className="flow-screen-heading"><div><small>02 · CREATE LOOK</small><h1>실제 판매 상품으로 코디하기</h1></div><span>LIVE PRODUCT DB · PRICE & STOCK CONNECTED</span></div>
+            <div className="create-look-layout">
+              <aside className="flow-product-picker"><div className="flow-category-row">{["상의","하의","아우터","신발","가방","액세서리","뷰티"].map((item) => <button key={item}>{item}</button>)}</div><div className="flow-product-list">{products.slice(0,8).map((product) => <article key={product.id} className={equipped.includes(product.id) ? "selected" : ""}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => equip(product)}>{equipped.includes(product.id) ? "착용 중" : "입어보기"}</button></article>)}</div></aside>
+              <div className="flow-avatar-stage"><CharacterTurnaroundViewer key={`flow-${gender}-${characterReset}`} character={gender === "female" ? "miyu" : "ren"} outfitMode={outfitMode} height={height} weight={weight} bodyShape={bodyShape} skinTone={skinTone} hairStyle={hairStyle} hairColor={hairColor} eyeColor={eyeColor} /></div>
+              <aside className="flow-look-summary"><small>YOUR LOOK</small><h2>성수 소개팅 룩</h2><div>{equippedProducts.map((product) => <span key={product.id}><i style={{ background: product.swatch }} /><b>{product.name}</b><em>{won(product.price)}</em></span>)}</div><p><span>TOTAL</span><strong>{won(total)}</strong></p><button onClick={() => setPlayStep(3)}>스타일 분석 보기 →</button></aside>
+            </div>
+          </section>}
+
+          {playStep === 3 && <section className="result-screen">
+            <div className="result-avatar"><div className="flow-avatar-stage"><CharacterTurnaroundViewer key={`result-${gender}`} character={gender === "female" ? "miyu" : "ren"} outfitMode="starter" height={height} weight={weight} bodyShape={bodyShape} skinTone={skinTone} hairStyle={hairStyle} hairColor={hairColor} eyeColor={eyeColor} /></div></div>
+            <div className="result-score"><small>STYLE MATCH</small><h1>92</h1><strong>FIRST DATE · EXCELLENT MATCH</strong><div><span><b>상황 적합도</b><i>★★★★★</i></span><span><b>컬러 밸런스</b><i>★★★★☆</i></span><span><b>스타일 완성도</b><i>★★★★★</i></span></div><p>커뮤니티 인기만이 아니라 상황·컬러·실루엣·새 상품 활용도를 함께 평가했어요.</p><button onClick={() => { setFriendVote(null); setPlayStep(4); notify("금요일 성수 소개팅 챌린지에 출품했어요"); }}>챌린지 출품하기 →</button></div>
+          </section>}
+
+          {playStep === 4 && <section className="vote-screen"><div className="flow-screen-heading"><div><small>04 · COMMUNITY VOTE</small><h1>FIRST DATE</h1></div><span>어느 코디가 성수 소개팅에 더 잘 어울리나요?</span></div><div className="versus-looks"><article className={friendVote === "a" ? "selected" : ""}><small>LOOK A</small><div className="large-look-figure" style={{ "--look-color":"#bba2ca" } as React.CSSProperties}><i /><i /><i /></div><strong>다경의 SOFT LOOK</strong><span>92 STYLE SCORE</span><button disabled={!!friendVote} onClick={() => setFriendVote("a")}>{friendVote === "a" ? "내 선택" : "LOOK A 투표"}</button></article><b>VS</b><article className={friendVote === "b" ? "selected" : ""}><small>LOOK B</small><div className="large-look-figure" style={{ "--look-color":"#7ba9a7" } as React.CSSProperties}><i /><i /><i /></div><strong>친구의 MINIMAL LOOK</strong><span>89 STYLE SCORE</span><button disabled={!!friendVote} onClick={() => setFriendVote("b")}>{friendVote === "b" ? "내 선택" : "LOOK B 투표"}</button></article></div><button className="flow-next-button" onClick={() => setPlayStep(5)} disabled={!friendVote}>투표 결과와 우승 룩 보기 →</button></section>}
+
+          {playStep === 5 && <section className="winner-community-screen"><div className="weekly-winner"><div><small>🏆 WEEKLY WINNER</small><h1>SUMMER<br />OFFICE LOOK</h1><span>12,842 VOTES · 94 STYLE SCORE</span><button onClick={() => setPlayStep(6)}>우승 코디 상품 보기 →</button></div><div className="winner-figure large-look-figure" style={{ "--look-color":"#bba2ca" } as React.CSSProperties}><i /><i /><i /></div></div><div className="community-feed-heading"><small>COMMUNITY</small><h2>다른 사람들이 만든 룩</h2></div><div className="community-look-feed">{[["하나","RAINY MINIMAL","#7ba9a7","4,921"],["소라","GALLERY DATE","#714a70","3,870"],["재인","SEOUL WEEKEND","#8f756e","3,228"],["리오","SOFT CAMPUS","#d69aac","2,906"]].map(([name,label,color,votes]) => <article key={name} onClick={() => setPlayStep(6)}><div className="look-mini" style={{ "--look-color":color } as React.CSSProperties}><i /><i /></div><small>{label}</small><strong>{name}의 LOOK</strong><span>♥ {votes}</span></article>)}</div></section>}
+
+          {playStep === 6 && <section className="shop-look-screen"><div className="shop-look-visual"><small>🏆 WEEKLY WINNER</small><div className="large-look-figure" style={{ "--look-color":"#bba2ca" } as React.CSSProperties}><i /><i /><i /></div><h1>SUMMER<br />OFFICE LOOK</h1><span>12,842 VOTES</span></div><div className="shop-look-products"><small>SHOP THE LOOK</small><h2>우승 코디 그대로 구매하기</h2><div>{[["JACKET","ARCHIVE 101",129000],["TOP","SÉRIE STUDIO",49000],["SKIRT","MOMENT EDITION",79000],["BAG","FORME",89000]].map(([type,brand,price]) => <article key={type as string}><i /><div><small>{type}</small><strong>{brand}</strong></div><b>{won(price as number)}</b><button onClick={() => notify(`${brand} 상품 상세를 열었어요`)}>상품 보기</button></article>)}</div><p><span>TOTAL</span><strong>346,000원</strong></p><button className="shop-all-button" onClick={() => { setPurchased(true); setUnlocked((current) => Array.from(new Set([...current,"jacket","skirt"]))); notify("우승 룩 4개 상품을 장바구니에 담았어요"); }}>전체 장바구니 담기</button><button className="shop-items-button" onClick={() => setMainTab("category")}>상품별로 보기</button>{purchased && <div className="flow-purchase-complete">구매 상품이 MY DIGITAL CLOSET에 등록됐어요 · 다시 PLAY 가능</div>}</div></section>}
+        </section>
+      )}
+
       {mainTab !== "play" && (
         <section className={`commerce-portal portal-${mainTab}`}>
           {mainTab === "home" && <>
             <section className="commerce-hero">
-              <div><small>SEOUL · 29°C · HUMID</small><h1>오늘 뭐 입지?</h1><p>일교차와 실내 냉방까지 고려한<br />가벼운 여름 출근룩</p><button onClick={() => { setSceneGroup("work"); setMainTab("play"); }}>출근룩 추천 보기 →</button></div>
+              <div><small>SEOUL · 29°C · HUMID</small><h1>오늘 뭐 입지?</h1><p>일교차와 실내 냉방까지 고려한<br />가벼운 여름 출근룩</p><button onClick={() => { setSceneGroup("work"); setPlayStep(1); setMainTab("play"); }}>출근룩 추천 보기 →</button></div>
               <div className="hero-look"><span>WEATHER CURATION</span><strong>LIGHT<br />OFFICE</strong><small>12 ITEMS · FROM 39,000</small></div>
             </section>
 
             <section className="portal-section">
-              <div className="portal-heading"><div><small>DISCOVER</small><h2>TRENDING LOOKS</h2></div><button onClick={() => setMainTab("play")}>전체 코디 보기 →</button></div>
+              <div className="portal-heading"><div><small>DISCOVER</small><h2>TRENDING LOOKS</h2></div><button onClick={() => { setPlayStep(5); setMainTab("play"); }}>전체 코디 보기 →</button></div>
               <div className="trending-look-grid">{[
                 ["루미", "FRIDAY OFFICE", "#bba2ca", "92"], ["하나", "RAINY MINIMAL", "#7ba9a7", "89"], ["소라", "CITY ROMANTIC", "#714a70", "87"], ["재인", "WEEKEND LAYER", "#8f756e", "86"],
-              ].map(([name, label, color, scoreValue]) => <article key={name} onClick={() => setMainTab("play")}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><small>{label}</small><strong>{name}의 LOOK</strong><span>{scoreValue} STYLE · ♡ 저장</span></article>)}</div>
+              ].map(([name, label, color, scoreValue]) => <article key={name} onClick={() => { setPlayStep(5); setMainTab("play"); }}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><small>{label}</small><strong>{name}의 LOOK</strong><span>{scoreValue} STYLE · ♡ 저장</span></article>)}</div>
             </section>
 
             <section className="today-challenge-card">
               <div><small>TODAY&apos;S CHALLENGE</small><h2>갑자기 잡힌 금요일 소개팅</h2><p>150,000원 안에서 첫인상과 편안함을 모두 잡아주세요.</p><span><b>8,241명</b> 참여 · 오늘 자정 마감</span></div>
-              <button onClick={() => { setSceneGroup("date"); setSceneExample(0); setMainTab("play"); }}>PLAY →</button>
+              <button onClick={() => { setSceneGroup("date"); setSceneExample(0); setPlayStep(1); setMainTab("play"); }}>PLAY →</button>
             </section>
 
             <section className="portal-section">
               <div className="portal-heading"><div><small>COMMERCE</small><h2>SHOP THE WINNERS</h2></div><span>이번 주 사람들이 가장 많이 산 코디</span></div>
               <div className="winner-product-grid">{[
                 ["SUMMER OFFICE", "271,000원", "4 ITEMS", "#bba2ca"], ["JEJU WEEKEND", "198,000원", "3 ITEMS", "#7ba9a7"], ["GALLERY DATE", "146,000원", "4 ITEMS", "#d69aac"],
-              ].map(([name, price, count, color]) => <article key={name}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><div><small>WEEKLY TOP LOOK</small><strong>{name}</strong><span>{count} · {price}</span><button onClick={() => setShowShop(true)}>이 룩 사기 →</button></div></article>)}</div>
+              ].map(([name, price, count, color]) => <article key={name}><div className="look-mini" style={{ "--look-color": color } as React.CSSProperties}><i /><i /></div><div><small>WEEKLY TOP LOOK</small><strong>{name}</strong><span>{count} · {price}</span><button onClick={() => { setPlayStep(6); setMainTab("play"); }}>이 룩 사기 →</button></div></article>)}</div>
             </section>
 
             <section className="portal-section closet-home-section">
               <div className="portal-heading"><div><small>PERSONALIZED BY YOUR PLAY</small><h2>FOR YOUR CLOSET</h2></div><button onClick={() => setMainTab("my")}>옷장 분석 보기 →</button></div>
               <p className="closet-advice">다경님은 최근 스커트 저장이 늘었어요. 가지고 있는 하의와 잘 어울리는 가벼운 아우터를 추천해요.</p>
-              <div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>코디해보기</button></article>)}</div>
+              <div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setPlayStep(2); setMainTab("play"); }}>코디해보기</button></article>)}</div>
             </section>
           </>}
 
-          {mainTab === "category" && <section className="portal-page-block"><div className="portal-heading"><div><small>MULTI-BRAND CATALOG</small><h1>상품 탐색</h1></div><span>{products.length}개 데모 상품 · PLAY 연동</span></div><div className="portal-product-grid">{products.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span><div><button onClick={() => setLiked((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])}>♡ 찜하기</button><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>✨ 이 아이템으로 코디하기</button></div></article>)}</div></section>}
+          {mainTab === "category" && <section className="portal-page-block"><div className="portal-heading"><div><small>MULTI-BRAND CATALOG</small><h1>상품 탐색</h1></div><span>{products.length}개 데모 상품 · PLAY 연동</span></div><div className="portal-product-grid">{products.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span><div><button onClick={() => setLiked((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])}>♡ 찜하기</button><button onClick={() => { setFocusedId(product.id); setPlayStep(2); setMainTab("play"); }}>✨ 이 아이템으로 코디하기</button></div></article>)}</div></section>}
 
           {mainTab === "search" && <section className="portal-page-block search-page"><small>SEARCH</small><h1>무드와 상황으로 찾아보세요</h1><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="상품, 브랜드, 소개팅룩, 장마 메이크업 검색" /><div className="popular-searches"><b>지금 많이 찾는 검색어</b>{["여름 출근룩", "15만원 소개팅", "장마 메이크업", "발레코어", "제주 여행"].map((term) => <button key={term} onClick={() => setSearchQuery(term)}>#{term}</button>)}</div><div className="search-result-note">{searchQuery ? `“${searchQuery}”에 맞는 상품과 Scene을 함께 보여드려요.` : "검색어를 입력하면 상품과 코디 미션을 함께 탐색할 수 있어요."}</div></section>}
 
           {mainTab === "my" && <section className="portal-page-block digital-closet-page">
             <div className="portal-heading"><div><small>MY DIGITAL CLOSET</small><h1>다경님 옷장 분석</h1></div><div className="closet-stat-chips"><span>구매·해금 <b>{unlocked.length}</b></span><span>찜 <b>{liked.length}</b></span><span>최근 착용 <b>{equipped.length}</b></span></div></div>
             <div className="digital-closet-grid"><article className="style-dna-card"><small>2 WEEKS OF PLAY</small><h2>YOUR STYLE DNA</h2>{styleDNA.map((style) => <div key={style.label}><span>{style.label}</span><i><b style={{ width: `${style.value}%`, background: style.color }} /></i><strong>{style.value}</strong></div>)}</article><article className="closet-analysis-card"><small>CLOSET BALANCE</small><h2>취향은 선명하고, 아우터가 부족해요</h2><div><span>BLACK <b>31%</b></span><span>MINIMAL <b>27%</b></span><span>FEMININE <b>24%</b></span></div><p>최근 스커트와 로맨틱 상의를 자주 저장했어요. 가지고 있는 옷에 매치하기 쉬운 간절기 아우터가 필요해요.</p></article><article className="closet-data-card"><small>CONNECTED DATA</small><h2>플레이가 취향 데이터가 됩니다</h2><ul><li>실제 구매·장바구니</li><li>찜한 상품과 선호 브랜드</li><li>자주 착용한 컬러·실루엣</li><li>사이즈와 반품 이력</li></ul></article></div>
-            <div className="portal-heading closet-next-heading"><div><small>PEOPLE WITH YOUR TASTE SAVED</small><h2>가지고 있는 옷과 잘 어울리는 상품</h2></div></div><div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setMainTab("play"); }}>내 옷과 코디</button></article>)}</div>
+            <div className="portal-heading closet-next-heading"><div><small>PEOPLE WITH YOUR TASTE SAVED</small><h2>가지고 있는 옷과 잘 어울리는 상품</h2></div></div><div className="closet-recommend-grid">{closetRecommendations.map((product) => <article key={product.id}><i style={{ background: product.swatch }} /><div><small>{brandAliases[product.id]}</small><strong>{product.name}</strong><span>{won(product.price)}</span></div><button onClick={() => { setFocusedId(product.id); setPlayStep(2); setMainTab("play"); }}>내 옷과 코디</button></article>)}</div>
           </section>}
         </section>
       )}
