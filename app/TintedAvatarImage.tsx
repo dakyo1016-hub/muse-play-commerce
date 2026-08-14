@@ -97,10 +97,10 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
           && r - g < 118 && g - b < 105;
         const auburnHair = r > g * 1.28 && g > b * 1.02 && r < 248;
         const darkHair = r < 158 && g < 140 && b < 140;
-        const isHair = hairMaskData
-          ? hairMaskData[offset + 3] > 18 || (ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair))
-          : ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair);
         const isProtectedClothing = bodyLayer && !!clothingMaskData && clothingMaskData[offset + 3] > 22;
+        const isHair = !isProtectedClothing && (hairMaskData
+          ? hairMaskData[offset + 3] > 18 || (ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair))
+          : ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair));
         const isSkin = looksLikeSkin && !isHair && !isProtectedClothing;
 
         // 몸은 하나의 연속 레이어로 변형하고, 헤드는 별도 레이어가 담당한다.
@@ -129,7 +129,9 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
           continue;
         }
 
-        const target = isEye ? eye : isHair ? hair : isSkin ? skin : null;
+        // Starter outfit pixels are authoritative garment colors. They must never
+        // be reclassified as dark hair, skin, or eyes when a user changes color.
+        const target = isProtectedClothing ? null : isEye ? eye : isHair ? hair : isSkin ? skin : null;
         if (!target) continue;
         const shade = isEye ? .94 + light * .28 : isHair ? .32 + light * .8 : .48 + light * .62;
         pixels.data[offset] = Math.min(255, target[0] * shade);

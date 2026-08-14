@@ -61,8 +61,10 @@ export default function CharacterTurnaroundViewer({
   const headSource = `/characters/${character}-${headVariant}/${frame.file}.png`;
   const hairMaskSource = `/characters/${character}-${headVariant}/${frame.file}.hair.png`;
   const underwearMaskSource = `/characters/${character}-base/${frame.file}.underwear.png`;
-  const clothingMaskSource = character === "miyu" && outfitMode === "starter"
-    ? `/characters/miyu-starter/${frame.file}.clothing.png`
+  const clothingMaskSource = outfitMode === "starter"
+    ? character === "ren"
+      ? `/characters/ren-starter-v2/${frame.file}.clothing.png`
+      : `/characters/miyu-starter/${frame.file}.clothing.png`
     : undefined;
 
   return (
