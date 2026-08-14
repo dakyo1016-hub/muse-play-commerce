@@ -221,6 +221,7 @@ export default function Home() {
   const [characterReset, setCharacterReset] = useState(0);
   const [challengeId, setChallengeId] = useState("office");
   const [voted, setVoted] = useState(false);
+  const renderedStarterIds = new Set(["basictee", "cardigan", "denim", "pumps"]);
 
   const restoreDefaultFemale = () => {
     setGender("female");
@@ -246,12 +247,16 @@ export default function Home() {
   const score = Math.min(100, 52 + tagSet.size * 7 + equippedProducts.length * 3);
   const challenge = challenges.find((item) => item.id === challengeId) ?? challenges[0];
   const visibleEquippedIds = outfitMode === "starter"
-    ? new Set(equippedProducts.filter((product) => product.category !== "뷰티").map((product) => product.id))
+    ? new Set(["basictee", "cardigan", "denim", "pumps", ...equippedProducts.filter((product) => product.category === "뷰티").map((product) => product.id)])
     : new Set<string>();
 
   const equip = (product: Product) => {
     setFocusedId(product.id);
     if (product.category !== "뷰티") setOutfitMode("starter");
+    if (product.category !== "뷰티" && !renderedStarterIds.has(product.id)) {
+      notify("이 상품은 실제 착장 에셋 제작 대기 중이에요. 현재는 스타터 룩을 표시합니다.");
+      return;
+    }
     setEquipped((current) => {
       if (current.includes(product.id)) {
         if (product.id === "basictee") {
@@ -403,7 +408,6 @@ export default function Home() {
                   hairStyle={hairStyle}
                   hairColor={hairColor}
                   eyeColor={eyeColor}
-                  equippedItems={equippedProducts}
                 />
                 <div className="outfit-mode-switch" role="group" aria-label="캐릭터 의상 레이어">
                   <button className={outfitMode === "base" ? "active" : ""} onClick={() => setOutfitMode("base")}>기본 바디</button>
