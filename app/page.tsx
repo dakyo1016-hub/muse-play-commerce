@@ -7,7 +7,8 @@ type Product = {
   id: string;
   brand: string;
   name: string;
-  category: "상의" | "하의" | "슈즈" | "뷰티";
+  category: "상의" | "하의" | "아우터" | "슈즈" | "뷰티";
+  stock: number;
   price: number;
   color: string;
   accent: string;
@@ -18,10 +19,24 @@ type Product = {
 
 const products: Product[] = [
   {
+    id: "basictee",
+    brand: "MY CLOSET",
+    name: "무료 기본 이너 티",
+    category: "상의",
+    stock: 999,
+    price: 0,
+    color: "#eee9df",
+    accent: "#b9afa7",
+    swatch: "linear-gradient(135deg, #fffdf7, #d8d0c8)",
+    tags: ["기본", "레이어드"],
+    description: "아우터 안에 언제든 입을 수 있고 상의를 벗으면 자동으로 돌아오는 기본 티셔츠",
+  },
+  {
     id: "cardigan",
     brand: "MORNING DEW",
     name: "뮤트 라일락 크롭 가디건",
-    category: "상의",
+    category: "아우터",
+    stock: 18,
     price: 49000,
     color: "#bba2ca",
     accent: "#70517f",
@@ -34,6 +49,7 @@ const products: Product[] = [
     brand: "BLUE HOUR",
     name: "인디고 부츠컷 데님",
     category: "하의",
+    stock: 12,
     price: 69000,
     color: "#25355e",
     accent: "#101932",
@@ -46,6 +62,7 @@ const products: Product[] = [
     brand: "MUSE ARCHIVE",
     name: "플럼 체크 플리츠",
     category: "하의",
+    stock: 9,
     price: 62000,
     color: "#714a70",
     accent: "#33223f",
@@ -58,6 +75,7 @@ const products: Product[] = [
     brand: "STEP BY STEP",
     name: "민트 스퀘어 펌프스",
     category: "슈즈",
+    stock: 7,
     price: 58000,
     color: "#7ba9a7",
     accent: "#3e6f70",
@@ -70,6 +88,7 @@ const products: Product[] = [
     brand: "PETAL LAB",
     name: "로즈 밀크 글로우 틴트",
     category: "뷰티",
+    stock: 24,
     price: 18000,
     color: "#d96a7b",
     accent: "#8d3447",
@@ -82,6 +101,7 @@ const products: Product[] = [
     brand: "PETAL LAB",
     name: "피치 베일 블러셔",
     category: "뷰티",
+    stock: 16,
     price: 22000,
     color: "#ec947d",
     accent: "#b85f57",
@@ -89,20 +109,107 @@ const products: Product[] = [
     tags: ["걸리시", "생기"],
     description: "픽셀 텍스처 얼굴에도 자연스럽게 얹히는 맑은 피치 톤 블러셔",
   },
+  {
+    id: "blouse",
+    brand: "MORNING DEW",
+    name: "아이보리 리본 블라우스",
+    category: "상의",
+    stock: 14,
+    price: 54000,
+    color: "#eee4da",
+    accent: "#8e6576",
+    swatch: "linear-gradient(135deg, #fff9ef, #d8c8c2)",
+    tags: ["걸리시", "오피스"],
+    description: "리본 칼라와 퍼프 소매로 로맨틱한 볼륨을 더한 블라우스",
+  },
+  {
+    id: "tee",
+    brand: "DAILY PIXEL",
+    name: "세이지 슬림 티셔츠",
+    category: "상의",
+    stock: 21,
+    price: 32000,
+    color: "#8fa99d",
+    accent: "#516d63",
+    swatch: "linear-gradient(135deg, #bad0c5, #6d8d80)",
+    tags: ["소프트", "데일리"],
+    description: "레이어드하기 쉬운 슬림 핏과 차분한 세이지 컬러의 기본 티셔츠",
+  },
+  {
+    id: "widepants",
+    brand: "LINE EDITION",
+    name: "차콜 와이드 슬랙스",
+    category: "하의",
+    stock: 11,
+    price: 72000,
+    color: "#45434d",
+    accent: "#24232a",
+    swatch: "linear-gradient(135deg, #777480, #302f37)",
+    tags: ["오피스", "모던"],
+    description: "허리선은 단정하고 밑단은 넓게 떨어지는 롱 와이드 슬랙스",
+  },
+  {
+    id: "jacket",
+    brand: "MUSE ARCHIVE",
+    name: "코코아 크롭 재킷",
+    category: "아우터",
+    stock: 8,
+    price: 89000,
+    color: "#81665f",
+    accent: "#493936",
+    swatch: "linear-gradient(135deg, #a98c83, #604944)",
+    tags: ["레트로", "오피스"],
+    description: "짧은 길이와 넓은 라펠이 특징인 레트로 테일러드 재킷",
+  },
+  {
+    id: "trench",
+    brand: "CITY MUSE",
+    name: "샌드 미디 트렌치",
+    category: "아우터",
+    stock: 6,
+    price: 129000,
+    color: "#b79c76",
+    accent: "#6f5b43",
+    swatch: "linear-gradient(135deg, #d2bd9c, #987b58)",
+    tags: ["클래식", "오피스"],
+    description: "무릎 위까지 곧게 떨어지는 게임형 미디 트렌치코트",
+  },
+  {
+    id: "sneakers",
+    brand: "STEP BY STEP",
+    name: "크림 플랫폼 스니커즈",
+    category: "슈즈",
+    stock: 17,
+    price: 64000,
+    color: "#e7dfd2",
+    accent: "#81766d",
+    swatch: "linear-gradient(145deg, #fffaf0, #c6b9aa)",
+    tags: ["데일리", "포인트"],
+    description: "두툼한 밑창과 둥근 앞코로 비율을 살리는 플랫폼 스니커즈",
+  },
 ];
 
-const categories = ["전체", "상의", "하의", "슈즈", "뷰티"] as const;
+const categories = ["전체", "상의", "하의", "아우터", "슈즈", "뷰티"] as const;
 
 const won = (value: number) => `${value.toLocaleString("ko-KR")}원`;
 
+const challenges = [
+  { id: "office", icon: "▣", title: "첫 출근 오피스", brief: "신뢰감 + 부드러운 인상", reward: "백화점 10만원권", tags: ["오피스", "소프트"], entrants: 248 },
+  { id: "date", icon: "♡", title: "봄날 데이트", brief: "사진에 예쁜 로맨틱 룩", reward: "데이트 코스 이용권", tags: ["걸리시", "생기"], entrants: 183 },
+  { id: "festival", icon: "✦", title: "뮤직 페스티벌", brief: "움직임이 편한 포인트 룩", reward: "페스티벌 티켓 2매", tags: ["포인트", "데일리"], entrants: 319 },
+  { id: "travel", icon: "◇", title: "주말 여행", brief: "하루 종일 편안한 레이어드", reward: "호텔 숙박권", tags: ["데일리", "레이어드"], entrants: 156 },
+  { id: "guest", icon: "♧", title: "웨딩 하객룩", brief: "단정하지만 기억에 남게", reward: "뷰티 기프트 세트", tags: ["클래식", "오피스"], entrants: 211 },
+];
+
 export default function Home() {
   const [category, setCategory] = useState<(typeof categories)[number]>("전체");
-  const [equipped, setEquipped] = useState<string[]>(["cardigan", "denim", "pumps"]);
+  const [equipped, setEquipped] = useState<string[]>(["basictee", "cardigan", "denim", "pumps"]);
+  const [quantities, setQuantities] = useState<Record<string, number>>({ basictee: 1, cardigan: 1, denim: 1, pumps: 1 });
   const [focusedId, setFocusedId] = useState("cardigan");
   const [liked, setLiked] = useState<string[]>(["lip"]);
   const [toast, setToast] = useState("");
   const [showShop, setShowShop] = useState(false);
-  const [outfitMode, setOutfitMode] = useState<"base" | "starter">("base");
+  const [outfitMode, setOutfitMode] = useState<"base" | "starter">("starter");
   const [gender, setGender] = useState<"female" | "male">("female");
   const [height, setHeight] = useState(165);
   const [weight, setWeight] = useState(55);
@@ -112,6 +219,8 @@ export default function Home() {
   const [hairColor, setHairColor] = useState("#8a321f");
   const [eyeColor, setEyeColor] = useState("#43251f");
   const [characterReset, setCharacterReset] = useState(0);
+  const [challengeId, setChallengeId] = useState("office");
+  const [voted, setVoted] = useState(false);
 
   const restoreDefaultFemale = () => {
     setGender("female");
@@ -122,7 +231,7 @@ export default function Home() {
     setHairStyle(1);
     setHairColor("#8a321f");
     setEyeColor("#43251f");
-    setOutfitMode("base");
+    setOutfitMode("starter");
     setCharacterReset((current) => current + 1);
   };
 
@@ -131,18 +240,30 @@ export default function Home() {
     ? products
     : products.filter((product) => product.category === category);
   const equippedProducts = products.filter((product) => equipped.includes(product.id));
-  const total = equippedProducts.reduce((sum, product) => sum + product.price, 0);
+  const total = equippedProducts.reduce((sum, product) => sum + product.price * (quantities[product.id] ?? 1), 0);
+  const pieceCount = equippedProducts.reduce((sum, product) => sum + (quantities[product.id] ?? 1), 0);
   const tagSet = new Set(equippedProducts.flatMap((product) => product.tags));
   const score = Math.min(100, 52 + tagSet.size * 7 + equippedProducts.length * 3);
+  const challenge = challenges.find((item) => item.id === challengeId) ?? challenges[0];
+  const visibleEquippedIds = outfitMode === "starter"
+    ? new Set(equippedProducts.filter((product) => product.category !== "뷰티").map((product) => product.id))
+    : new Set<string>();
 
   const equip = (product: Product) => {
     setFocusedId(product.id);
     if (product.category !== "뷰티") setOutfitMode("starter");
     setEquipped((current) => {
       if (current.includes(product.id)) {
-        return current.filter((id) => id !== product.id);
+        if (product.id === "basictee") {
+          notify("기본 이너 티는 항상 옷장에 남아 있어요");
+          return current;
+        }
+        setQuantities((values) => { const next = { ...values }; delete next[product.id]; return next; });
+        const next = current.filter((id) => id !== product.id);
+        if (product.category === "상의") return [...next, "basictee"];
+        return next;
       }
-      const withoutCategory = current.filter((id) => {
+      let withoutCategory = current.filter((id) => {
         const item = products.find((candidate) => candidate.id === id);
         return item?.category !== product.category;
       });
@@ -151,6 +272,10 @@ export default function Home() {
           ? current.filter((id) => id !== product.id)
           : [...current, product.id];
       }
+      if (product.category === "아우터" && !current.some((id) => products.find((item) => item.id === id)?.category === "상의")) {
+        withoutCategory = [...withoutCategory, "basictee"];
+      }
+      setQuantities((values) => ({ ...values, [product.id]: values[product.id] ?? 1, basictee: values.basictee ?? 1 }));
       return [...withoutCategory, product.id];
     });
   };
@@ -191,7 +316,9 @@ export default function Home() {
         </div>
         <div className="mission-tags"><span>#소프트</span><span>#레트로</span><span>#오피스</span></div>
         <button onClick={() => {
-          setEquipped(["cardigan", "denim", "pumps", "lip"]);
+          setEquipped(["basictee", "cardigan", "denim", "pumps", "lip"]);
+          setQuantities({ basictee: 1, cardigan: 1, denim: 1, pumps: 1, lip: 1 });
+          setOutfitMode("starter");
           notify("추천 코디를 불러왔어요");
         }}>추천 코디 불러오기</button>
       </section>
@@ -217,7 +344,9 @@ export default function Home() {
 
           <div className="product-list">
             {visibleProducts.map((product) => {
-              const isEquipped = equipped.includes(product.id);
+              const isEquipped = product.category === "뷰티"
+                ? equipped.includes(product.id)
+                : visibleEquippedIds.has(product.id);
               const isLiked = liked.includes(product.id);
               return (
                 <article
@@ -242,6 +371,7 @@ export default function Home() {
                     <small>{product.brand}</small>
                     <h2>{product.name}</h2>
                     <div className="mini-tags">{product.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>
+                    <em className="stock-count">재고 {product.stock}개</em>
                     <b>{won(product.price)}</b>
                   </div>
                   <button
@@ -250,7 +380,7 @@ export default function Home() {
                       event.stopPropagation();
                       equip(product);
                     }}
-                  >{isEquipped ? "착용중" : "입어보기"}</button>
+                  >{isEquipped ? (product.id === "basictee" ? "기본 장착" : "착용중") : equipped.includes(product.id) ? "선택됨" : "입어보기"}</button>
                 </article>
               );
             })}
@@ -273,10 +403,11 @@ export default function Home() {
                   hairStyle={hairStyle}
                   hairColor={hairColor}
                   eyeColor={eyeColor}
+                  equippedItems={equippedProducts}
                 />
                 <div className="outfit-mode-switch" role="group" aria-label="캐릭터 의상 레이어">
                   <button className={outfitMode === "base" ? "active" : ""} onClick={() => setOutfitMode("base")}>기본 바디</button>
-                  <button className={outfitMode === "starter" ? "active" : ""} onClick={() => setOutfitMode("starter")}>스타터 룩</button>
+                  <button className={outfitMode === "starter" ? "active" : ""} onClick={() => setOutfitMode("starter")}>상품 착장</button>
                 </div>
                 <div className="scanlines" />
               </div>
@@ -299,8 +430,8 @@ export default function Home() {
                 <section className="editor-section">
                   <label>캐릭터</label>
                   <div className="segmented-control">
-                    <button className={gender === "female" ? "active" : ""} onClick={() => { setGender("female"); setHeight(165); setWeight(55); setOutfitMode("base"); }}>여성</button>
-                    <button className={gender === "male" ? "active" : ""} onClick={() => { setGender("male"); setHeight(175); setWeight(70); setOutfitMode("base"); }}>남성</button>
+                    <button className={gender === "female" ? "active" : ""} onClick={() => { setGender("female"); setHeight(165); setWeight(55); setOutfitMode("starter"); }}>여성</button>
+                    <button className={gender === "male" ? "active" : ""} onClick={() => { setGender("male"); setHeight(175); setWeight(70); setOutfitMode("starter"); }}>남성</button>
                   </div>
 
                   <label htmlFor="height-range">키 <span className="number-field"><input aria-label="키 직접 입력" type="number" min="145" max="195" value={height} onChange={(event) => setHeight(Math.min(195, Math.max(145, Number(event.target.value))))} />cm</span></label>
@@ -348,14 +479,27 @@ export default function Home() {
           </div>
 
           <section className="outfit-summary">
-            <div className="section-title"><span>CURRENT LOOK</span><b>{equippedProducts.length} ITEMS</b></div>
+            <div className="section-title"><span>CURRENT LOOK</span><b>{equippedProducts.length}종 · {pieceCount}개</b></div>
             <div className="selected-list">
               {equippedProducts.map((product) => (
                 <div key={product.id}>
                   <i style={{ background: product.swatch }} />
                   <span><small>{product.category}</small>{product.name}</span>
-                  <b>{won(product.price)}</b>
-                  <button aria-label={`${product.name} 제거`} onClick={() => setEquipped((current) => current.filter((id) => id !== product.id))}>×</button>
+                  {product.id === "basictee" ? <em className="basic-item-badge">FREE</em> : (
+                    <div className="quantity-stepper" aria-label={`${product.name} 수량`}>
+                      <button onClick={() => setQuantities((current) => ({ ...current, [product.id]: Math.max(1, (current[product.id] ?? 1) - 1) }))}>−</button>
+                      <b>{quantities[product.id] ?? 1}</b>
+                      <button onClick={() => setQuantities((current) => ({ ...current, [product.id]: Math.min(product.stock, (current[product.id] ?? 1) + 1) }))}>＋</button>
+                    </div>
+                  )}
+                  <b>{won(product.price * (quantities[product.id] ?? 1))}</b>
+                  <button aria-label={`${product.name} 제거`} disabled={product.id === "basictee"} onClick={() => {
+                    if (product.id === "basictee") return;
+                    setEquipped((current) => {
+                      const next = current.filter((id) => id !== product.id);
+                      return product.category === "상의" ? [...next, "basictee"] : next;
+                    });
+                  }}>{product.id === "basictee" ? "●" : "×"}</button>
                 </div>
               ))}
             </div>
@@ -373,6 +517,31 @@ export default function Home() {
         </aside>
       </div>
 
+      <section className="challenge-hub" aria-labelledby="challenge-title">
+        <div className="challenge-heading">
+          <div><span>STYLE CHALLENGE</span><h2 id="challenge-title">상황별 코디 배틀</h2></div>
+          <p>실제 상품으로 코디를 만들고, 마음에 드는 룩에 투표해요. 우승자는 선물을 받고 다른 사용자는 룩을 그대로 쇼핑할 수 있어요.</p>
+        </div>
+        <div className="challenge-tabs" role="tablist" aria-label="코디 상황 선택">
+          {challenges.map((item) => <button key={item.id} role="tab" aria-selected={challengeId === item.id} className={challengeId === item.id ? "active" : ""} onClick={() => { setChallengeId(item.id); setVoted(false); }}><i>{item.icon}</i><b>{item.title}</b><small>{item.entrants}명 참가</small></button>)}
+        </div>
+        <div className="challenge-content">
+          <article className="challenge-brief">
+            <span>THIS WEEK&apos;S SCENE</span><h3>{challenge.title}</h3><p>{challenge.brief}</p>
+            <div>{challenge.tags.map((tag) => <b key={tag}>#{tag}</b>)}</div>
+            <strong>1등 선물 · {challenge.reward}</strong>
+            <button onClick={() => notify(`${challenge.title}에 현재 코디를 출품했어요`)}>내 코디 출품하기</button>
+          </article>
+          <div className="vote-board">
+            {[
+              { rank: 1, name: "루미", votes: 1284, palette: "#bba2ca", label: "SOFT OFFICE" },
+              { rank: 2, name: "하나", votes: 1137, palette: "#7ba9a7", label: "MINT RETRO" },
+              { rank: 3, name: "소라", votes: 986, palette: "#714a70", label: "PLUM CLASSIC" },
+            ].map((entry) => <article key={entry.rank} className="vote-card"><span className="rank">#{entry.rank}</span><div className="look-mini" style={{ "--look-color": entry.palette } as React.CSSProperties}><i /><i /></div><div><small>{entry.label}</small><h3>{entry.name}의 코디</h3><p>♥ {(entry.votes + (voted && entry.rank === 1 ? 1 : 0)).toLocaleString()}</p></div><button disabled={voted} onClick={() => { setVoted(true); notify("1위 후보에게 투표했어요 · +20 COIN"); }}>{voted ? "투표 완료" : "투표"}</button></article>)}
+          </div>
+        </div>
+      </section>
+
       {toast && <div className="toast" role="status">{toast}</div>}
 
       {showShop && (
@@ -384,7 +553,7 @@ export default function Home() {
             <p>선택한 상품을 실제 커머스 장바구니로 넘기기 전 단계입니다.</p>
             <div className="modal-items">
               {equippedProducts.map((product) => (
-                <div key={product.id}><i style={{ background: product.swatch }} /><span>{product.name}</span><b>{won(product.price)}</b></div>
+                <div key={product.id}><i style={{ background: product.swatch }} /><span>{product.name} × {quantities[product.id] ?? 1}</span><b>{won(product.price * (quantities[product.id] ?? 1))}</b></div>
               ))}
             </div>
             <div className="modal-total"><span>플레이 혜택 적용</span><strong>{won(Math.round(total * 0.92))}</strong></div>

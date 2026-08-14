@@ -13,6 +13,7 @@ type TintedAvatarImageProps = {
   character?: "miyu" | "ren";
   baseOutfit?: boolean;
   hairMaskSrc?: string;
+  underwearMaskSrc?: string;
   className?: string;
 };
 
@@ -21,7 +22,7 @@ const rgb = (hex: string) => {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 };
 
-export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, character = "miyu", baseOutfit = false, hairMaskSrc, className = "" }: TintedAvatarImageProps) {
+export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, character = "miyu", baseOutfit = false, hairMaskSrc, underwearMaskSrc, className = "" }: TintedAvatarImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -49,24 +50,30 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
       const hair = rgb(hairColor);
       const eye = rgb(eyeColor);
       let hairMaskData: Uint8ClampedArray | null = null;
+      let underwearMaskData: Uint8ClampedArray | null = null;
 
-      if (hairMaskSrc) {
+      const loadMask = async (maskSrc?: string) => {
+        if (!maskSrc) return null;
         const mask = new Image();
-        mask.src = hairMaskSrc;
+        mask.src = maskSrc;
         try {
           await mask.decode();
           const maskCanvas = document.createElement("canvas");
           maskCanvas.width = canvas.width;
           maskCanvas.height = canvas.height;
           const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
-          if (maskContext) {
-            maskContext.drawImage(mask, 0, 0, canvas.width, canvas.height);
-            hairMaskData = maskContext.getImageData(0, 0, canvas.width, canvas.height).data;
-          }
+          if (!maskContext) return null;
+          maskContext.drawImage(mask, 0, 0, canvas.width, canvas.height);
+          return maskContext.getImageData(0, 0, canvas.width, canvas.height).data;
         } catch {
-          hairMaskData = null;
+          return null;
         }
-      }
+      };
+
+      [hairMaskData, underwearMaskData] = await Promise.all([
+        loadMask(hairMaskSrc),
+        loadMask(underwearMaskSrc),
+      ]);
 
       for (let offset = 0; offset < pixels.data.length; offset += 4) {
         if (pixels.data[offset + 3] < 12) continue;
@@ -106,18 +113,12 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
           continue;
         }
 
-        // 밝은 피부톤에서도 기본 이너웨어가 사라져 보이지 않게
-        // 원본의 무채색 속옷 영역을 라벤더 그레이로 고정한다.
-        const isNeutralFabric = Math.max(r, g, b) - Math.min(r, g, b) < 28 && light > .48;
-        const isFemaleBra = character === "miyu" && ny > .19 && ny < .345;
-        const isFemaleShorts = character === "miyu" && ny > .405 && ny < .535;
-        const isMaleBoxers = character === "ren" && ny > .405 && ny < .58;
-        const isBaseUnderwear = baseOutfit && bodyLayer && isNeutralFabric
-          && (isFemaleBra || isFemaleShorts || isMaleBoxers);
+        const isBaseUnderwear = baseOutfit && bodyLayer && !!underwearMaskData
+          && underwearMaskData[offset + 3] > 22;
 
         if (isBaseUnderwear) {
           const fabric = character === "miyu" ? [164, 149, 181] : [117, 130, 151];
-          const fabricShade = .58 + light * .48;
+          const fabricShade = .68 + light * .34;
           pixels.data[offset] = Math.min(255, fabric[0] * fabricShade);
           pixels.data[offset + 1] = Math.min(255, fabric[1] * fabricShade);
           pixels.data[offset + 2] = Math.min(255, fabric[2] * fabricShade);
@@ -126,14 +127,14 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
 
         const target = isEye ? eye : isHair ? hair : isSkin ? skin : null;
         if (!target) continue;
-        const shade = isEye ? .58 + light * .58 : isHair ? .28 + light * .9 : .35 + light * .82;
+        const shade = isEye ? .94 + light * .28 : isHair ? .32 + light * .8 : .48 + light * .62;
         pixels.data[offset] = Math.min(255, target[0] * shade);
         pixels.data[offset + 1] = Math.min(255, target[1] * shade);
         pixels.data[offset + 2] = Math.min(255, target[2] * shade);
       }
       context.putImageData(pixels, 0, 0);
     };
-  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, character, baseOutfit, hairMaskSrc]);
+  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, character, baseOutfit, hairMaskSrc, underwearMaskSrc]);
 
   return <canvas ref={canvasRef} className={`avatar-base-image ${className}`} aria-hidden="true" />;
 }

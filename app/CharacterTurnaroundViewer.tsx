@@ -14,6 +14,12 @@ type CharacterTurnaroundViewerProps = {
   hairStyle: 1 | 2 | 3;
   hairColor: string;
   eyeColor: string;
+  equippedItems: Array<{
+    id: string;
+    category: "상의" | "하의" | "아우터" | "슈즈" | "뷰티";
+    color: string;
+    accent: string;
+  }>;
 };
 
 const frames = [
@@ -33,6 +39,7 @@ export default function CharacterTurnaroundViewer({
   hairStyle,
   hairColor,
   eyeColor,
+  equippedItems,
 }: CharacterTurnaroundViewerProps) {
   const [frameIndex, setFrameIndex] = useState(0);
   const rotate = (delta: number) => setFrameIndex((current) => (current + delta + frames.length) % frames.length);
@@ -52,10 +59,11 @@ export default function CharacterTurnaroundViewer({
     "--body-height": bodyHeightScale,
     "--body-width": weightScale * shape,
   } as CSSProperties;
-  const bodySource = `/characters/${character}-${outfitMode}/${frame.file}.png`;
+  const bodySource = `/characters/${character}-base/${frame.file}.png`;
   const headVariant = hairStyle === 1 ? "base" : hairStyle === 2 ? "hair-short" : "hair-wave";
   const headSource = `/characters/${character}-${headVariant}/${frame.file}.png`;
   const hairMaskSource = `/characters/${character}-${headVariant}/${frame.file}.hair.png`;
+  const underwearMaskSource = `/characters/${character}-base/${frame.file}.underwear.png`;
 
   return (
     <div className="character-viewer reference-character-viewer" style={customStyle}>
@@ -69,9 +77,18 @@ export default function CharacterTurnaroundViewer({
             front={frame.file === "front"}
             bodyLayer
             character={character}
-            baseOutfit={outfitMode === "base"}
+            baseOutfit
+            underwearMaskSrc={underwearMaskSource}
             className="avatar-body-layer"
           />
+          {outfitMode === "starter" && equippedItems.map((item) => (
+            <span
+              key={item.id}
+              className={`wearable-layer wearable-${item.id} wearable-${item.category} view-${frame.file} character-${character}`}
+              style={{ "--item-color": item.color, "--item-accent": item.accent } as CSSProperties}
+              aria-hidden="true"
+            />
+          ))}
           <TintedAvatarImage
             key={`${headVariant}-${frame.file}`}
             src={headSource}
