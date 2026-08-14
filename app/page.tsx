@@ -221,6 +221,8 @@ export default function Home() {
   const [characterReset, setCharacterReset] = useState(0);
   const [challengeId, setChallengeId] = useState("office");
   const [voted, setVoted] = useState(false);
+  const [purchased, setPurchased] = useState(false);
+  const [unlocked, setUnlocked] = useState<string[]>(["basictee"]);
   const renderedStarterIds = new Set(["basictee", "cardigan", "denim", "pumps"]);
 
   const restoreDefaultFemale = () => {
@@ -307,6 +309,13 @@ export default function Home() {
           <button onClick={() => notify(`찜한 상품 ${liked.length}개`) }>나의 옷장</button>
         </nav>
 
+        <div className="commerce-journey" aria-label="쇼핑 경험 단계">
+          <span className="active"><b>01</b> 쇼핑</span>
+          <i>→</i><span><b>02</b> 플레이</span>
+          <i>→</i><span><b>03</b> 발견</span>
+          <i>→</i><span><b>04</b> 구매</span>
+        </div>
+
         <div className="account-stats">
           <span><b>DAY</b> 07</span>
           <span><b>♥</b> 128</span>
@@ -326,6 +335,24 @@ export default function Home() {
           setOutfitMode("starter");
           notify("추천 코디를 불러왔어요");
         }}>추천 코디 불러오기</button>
+      </section>
+
+      <section className="product-play-bridge" aria-label="상품과 스타일 챌린지 연결">
+        <div className="bridge-product" style={{ "--bridge-swatch": focused.swatch } as React.CSSProperties}>
+          <i />
+          <div><small>지금 보고 있는 상품</small><strong>{focused.name}</strong><span>{won(focused.price)}</span></div>
+        </div>
+        <div className="bridge-copy">
+          <small>SHOP TO PLAY</small>
+          <strong>이 상품으로 여름 제주 여행룩 챌린지 참여하기</strong>
+          <span>상품을 입혀보고 출품하면 다른 고객의 코디와 함께 노출돼요.</span>
+        </div>
+        <button onClick={() => {
+          equip(focused);
+          setChallengeId("travel");
+          setPurchased(false);
+          notify("선택한 상품으로 제주 여행룩 챌린지를 시작했어요");
+        }}>이 상품으로 참여하기 →</button>
       </section>
 
       <div className="workspace">
@@ -359,6 +386,7 @@ export default function Home() {
                   key={product.id}
                   onClick={() => setFocusedId(product.id)}
                 >
+                  {unlocked.includes(product.id) && <span className="owned-badge">영구 해금</span>}
                   <button
                     className={`heart ${isLiked ? "liked" : ""}`}
                     aria-label={`${product.name} 찜하기`}
@@ -521,7 +549,14 @@ export default function Home() {
         </aside>
       </div>
 
-      <section className="challenge-hub" aria-labelledby="challenge-title">
+      {purchased && (
+        <section className="unlock-banner" aria-live="polite">
+          <div><small>PURCHASE COMPLETE</small><strong>구매 완료 · {equippedProducts.length}개 아이템 영구 해금</strong><span>구매한 상품은 앞으로 모든 코디와 챌린지에서 바로 사용할 수 있어요.</span></div>
+          <button onClick={() => { setChallengeId("travel"); notify("해금 아이템으로 다음 챌린지를 시작해요"); }}>해금 아이템으로 다시 플레이 →</button>
+        </section>
+      )}
+
+      <section className="challenge-hub discovery-feed" aria-labelledby="challenge-title">
         <div className="challenge-heading">
           <div><span>STYLE CHALLENGE</span><h2 id="challenge-title">상황별 코디 배틀</h2></div>
           <p>실제 상품으로 코디를 만들고, 마음에 드는 룩에 투표해요. 우승자는 선물을 받고 다른 사용자는 룩을 그대로 쇼핑할 수 있어요.</p>
@@ -537,6 +572,10 @@ export default function Home() {
             <button onClick={() => notify(`${challenge.title}에 현재 코디를 출품했어요`)}>내 코디 출품하기</button>
           </article>
           <div className="vote-board">
+            <article className="buyable-look">
+              <div><small>SHOP THE WINNING LOOK</small><strong>루나의 제주 선셋 룩</strong><span>가디건 · 데님 · 펌프스 · 립 틴트</span></div>
+              <div><b>214,000원</b><button onClick={() => setShowShop(true)}>이 룩 그대로 구매하기 →</button></div>
+            </article>
             {[
               { rank: 1, name: "루미", votes: 1284, palette: "#bba2ca", label: "SOFT OFFICE" },
               { rank: 2, name: "하나", votes: 1137, palette: "#7ba9a7", label: "MINT RETRO" },
@@ -563,6 +602,8 @@ export default function Home() {
             <div className="modal-total"><span>플레이 혜택 적용</span><strong>{won(Math.round(total * 0.92))}</strong></div>
             <button className="primary-cta" onClick={() => {
               setShowShop(false);
+              setPurchased(true);
+              setUnlocked((current) => Array.from(new Set([...current, ...equippedProducts.map((product) => product.id)])));
               notify("커머스 장바구니 연결을 확인했어요");
             }}>장바구니 연결 확인</button>
           </section>
