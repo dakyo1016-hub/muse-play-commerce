@@ -70,8 +70,8 @@ export default function CharacterTurnaroundViewer({
             front={frame.file === "front"}
             bodyLayer
             character={character}
-            baseOutfit
-            underwearMaskSrc={underwearMaskSource}
+            baseOutfit={outfitMode === "base"}
+            underwearMaskSrc={outfitMode === "base" ? underwearMaskSource : undefined}
             className="avatar-body-layer"
           />
           <TintedAvatarImage
