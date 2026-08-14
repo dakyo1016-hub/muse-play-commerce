@@ -14,6 +14,13 @@ type CharacterTurnaroundViewerProps = {
   hairStyle: 1 | 2 | 3;
   hairColor: string;
   eyeColor: string;
+  outfitColors?: {
+    outer?: string;
+    top?: string;
+    bottom?: string;
+    dress?: string;
+    shoes?: string;
+  };
 };
 
 const frames = [
@@ -33,6 +40,7 @@ export default function CharacterTurnaroundViewer({
   hairStyle,
   hairColor,
   eyeColor,
+  outfitColors,
 }: CharacterTurnaroundViewerProps) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [zoom, setZoom] = useState(.9);
@@ -82,6 +90,7 @@ export default function CharacterTurnaroundViewer({
             baseOutfit={outfitMode === "base"}
             underwearMaskSrc={outfitMode === "base" ? underwearMaskSource : undefined}
             clothingMaskSrc={clothingMaskSource}
+            outfitColors={outfitColors}
             className="avatar-body-layer"
           />
           <TintedAvatarImage

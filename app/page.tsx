@@ -70,6 +70,16 @@ export default function Home() {
 
   const visibleItems = category === "ALL" ? items : items.filter((item) => item.category === category);
   const selectedItems = useMemo(() => items.filter((item) => selectedIds.includes(item.id)), [selectedIds]);
+  const outfitColors = useMemo(() => {
+    const selected = (category: Item["category"]) => selectedItems.find((item) => item.category === category)?.color;
+    return {
+      outer: selected("OUTER"),
+      top: selected("TOP"),
+      bottom: selected("BOTTOM"),
+      dress: selected("DRESS"),
+      shoes: selected("SHOES"),
+    };
+  }, [selectedItems]);
   const createTotal = selectedItems.reduce((sum, item) => sum + item.price, 0);
   const shopTotal = (swapped ? 32000 : 49000) + 69000 + 58000;
 
@@ -87,7 +97,12 @@ export default function Home() {
   const toggleItem = (item: Item) => {
     setSelectedIds((current) => {
       if (current.includes(item.id)) return current.filter((id) => id !== item.id);
-      const sameCategory = item.category === "ACC" ? current : current.filter((id) => items.find((candidate) => candidate.id === id)?.category !== item.category);
+      const conflicts = item.category === "DRESS"
+        ? ["DRESS", "TOP", "BOTTOM"]
+        : item.category === "TOP" || item.category === "BOTTOM"
+          ? [item.category, "DRESS"]
+          : [item.category];
+      const sameCategory = item.category === "ACC" ? current : current.filter((id) => !conflicts.includes(items.find((candidate) => candidate.id === id)?.category ?? "ACC"));
       return [...sameCategory, item.id];
     });
   };
@@ -148,10 +163,11 @@ export default function Home() {
                   height={styleModel === "miyu" ? 165 : 175}
                   weight={styleModel === "miyu" ? 55 : 70}
                   bodyShape="average"
-                  skinTone={styleModel === "miyu" ? "#efb78d" : "#d6a474"}
+                  skinTone={styleModel === "miyu" ? "#eab18c" : "#d39a78"}
                   hairStyle={1}
                   hairColor={styleModel === "miyu" ? "#8b3826" : "#2b2422"}
                   eyeColor={styleModel === "miyu" ? "#43251f" : "#35424a"}
+                  outfitColors={outfitColors}
                 />
               </div>
               <div className="style-model-selector"><div><small>MUSE STYLE MODEL</small><strong>외모를 만드는 대신, 스타일링에 집중하세요.</strong></div><button className={styleModel === "miyu" ? "active" : ""} onClick={() => setStyleModel("miyu")}><img src="/characters/miyu-starter/front.png" alt="미유" /><span><b>MIYU</b>MODEL 01</span></button><button className={styleModel === "ren" ? "active" : ""} onClick={() => setStyleModel("ren")}><img src="/characters/ren-starter-v2/front.png" alt="렌" /><span><b>REN</b>MODEL 02</span></button></div>
