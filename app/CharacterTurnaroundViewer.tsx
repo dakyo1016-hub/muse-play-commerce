@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import TintedAvatarImage from "./TintedAvatarImage";
+import LayeredOutfit from "./LayeredOutfit";
+import type { OutfitSelection } from "./LayeredOutfit";
 
 type CharacterTurnaroundViewerProps = {
   character: "miyu" | "ren";
@@ -21,6 +23,7 @@ type CharacterTurnaroundViewerProps = {
     dress?: string;
     shoes?: string;
   };
+  outfitSelection?: OutfitSelection;
 };
 
 const frames = [
@@ -41,6 +44,7 @@ export default function CharacterTurnaroundViewer({
   hairColor,
   eyeColor,
   outfitColors,
+  outfitSelection,
 }: CharacterTurnaroundViewerProps) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [zoom, setZoom] = useState(.9);
@@ -93,6 +97,7 @@ export default function CharacterTurnaroundViewer({
             outfitColors={outfitColors}
             className="avatar-body-layer"
           />
+          {outfitSelection && <LayeredOutfit character={character} frame={frame.file} selection={outfitSelection} />}
           <TintedAvatarImage
             key={`${headVariant}-${frame.file}`}
             src={headSource}

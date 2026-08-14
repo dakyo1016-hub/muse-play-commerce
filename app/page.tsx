@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import CharacterTurnaroundViewer from "./CharacterTurnaroundViewer";
+import type { OutfitSelection } from "./LayeredOutfit";
 
 type Screen = "home" | "create" | "vote" | "shop";
 type Category = "ALL" | "OUTER" | "TOP" | "BOTTOM" | "DRESS" | "SHOES" | "BAG" | "ACC";
@@ -121,6 +122,21 @@ export default function Home() {
       shoes: selected("SHOES"),
     };
   }, [selectedItems]);
+  const outfitSelection = useMemo<OutfitSelection>(() => {
+    const one = (category: Item["category"]) => {
+      const item = selectedItems.find((candidate) => candidate.category === category);
+      return item ? { id:item.id, color:item.color, pattern:item.pattern } : undefined;
+    };
+    return {
+      outer: one("OUTER"),
+      top: one("TOP"),
+      bottom: one("BOTTOM"),
+      dress: one("DRESS"),
+      shoes: one("SHOES"),
+      bag: one("BAG"),
+      accessories: selectedItems.filter((item) => item.category === "ACC").map((item) => ({ id:item.id, color:item.color, pattern:item.pattern })),
+    };
+  }, [selectedItems]);
   const createTotal = selectedItems.reduce((sum, item) => sum + item.price, 0);
   const shopTotal = (swapped ? 32000 : 49000) + 69000 + 58000;
 
@@ -138,6 +154,9 @@ export default function Home() {
   const toggleItem = (item: Item) => {
     setSelectedIds((current) => {
       if (current.includes(item.id)) return current.filter((id) => id !== item.id);
+      if (item.id === "ball-cap" || item.id === "bucket-hat") {
+        return [...current.filter((id) => id !== "ball-cap" && id !== "bucket-hat"), item.id];
+      }
       const conflicts = item.category === "DRESS"
         ? ["DRESS", "TOP", "BOTTOM"]
         : item.category === "TOP" || item.category === "BOTTOM"
@@ -200,7 +219,7 @@ export default function Home() {
                 <CharacterTurnaroundViewer
                   key={`style-model-${styleModel}`}
                   character={styleModel}
-                  outfitMode="starter"
+                  outfitMode="base"
                   height={styleModel === "miyu" ? 165 : 175}
                   weight={styleModel === "miyu" ? 55 : 70}
                   bodyShape="average"
@@ -209,6 +228,7 @@ export default function Home() {
                   hairColor={styleModel === "miyu" ? "#8b3826" : "#2b2422"}
                   eyeColor={styleModel === "miyu" ? "#43251f" : "#35424a"}
                   outfitColors={outfitColors}
+                  outfitSelection={outfitSelection}
                 />
               </div>
               <div className="style-model-selector"><div><small>MUSE STYLE MODEL</small><strong>외모를 만드는 대신, 스타일링에 집중하세요.</strong></div><button className={styleModel === "miyu" ? "active" : ""} onClick={() => setStyleModel("miyu")}><img src="/characters/miyu-starter/front.png" alt="미유" /><span><b>MIYU</b>MODEL 01</span></button><button className={styleModel === "ren" ? "active" : ""} onClick={() => setStyleModel("ren")}><img src="/characters/ren-starter-v2/front.png" alt="렌" /><span><b>REN</b>MODEL 02</span></button></div>
