@@ -101,14 +101,14 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
 
         // 몸은 하나의 연속 레이어로 변형하고, 헤드는 별도 레이어가 담당한다.
         // 상·하체를 잘라 확대할 때 생기던 손/골반 이음새를 없앤다.
-        if (bodyLayer && ny < .19) {
+        if (bodyLayer && ny < .15) {
           pixels.data[offset + 3] = 0;
           continue;
         }
 
         // 헤드 교체 레이어에서는 어깨 아래의 의상/몸을 비워 둔다.
         // 긴 머리 픽셀만 남겨 스타터 의상 위에도 자연스럽게 합성한다.
-        if (headLayer && ny > .205 && !isHair) {
+        if (headLayer && ny > .15 && !isHair) {
           pixels.data[offset + 3] = 0;
           continue;
         }

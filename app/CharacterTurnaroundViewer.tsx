@@ -35,7 +35,9 @@ export default function CharacterTurnaroundViewer({
   eyeColor,
 }: CharacterTurnaroundViewerProps) {
   const [frameIndex, setFrameIndex] = useState(0);
+  const [zoom, setZoom] = useState(.9);
   const rotate = (delta: number) => setFrameIndex((current) => (current + delta + frames.length) % frames.length);
+  const changeZoom = (delta: number) => setZoom((current) => Math.max(.72, Math.min(1.38, +(current + delta).toFixed(2))));
   const frame = frames[frameIndex];
   const name = character === "miyu" ? "미유" : "렌";
   const referenceHeight = character === "miyu" ? 165 : 175;
@@ -51,8 +53,10 @@ export default function CharacterTurnaroundViewer({
   const customStyle = {
     "--body-height": bodyHeightScale,
     "--body-width": weightScale * shape,
+    "--viewer-zoom": zoom,
   } as CSSProperties;
-  const bodySource = `/characters/${character}-${outfitMode}/${frame.file}.png`;
+  const outfitVariant = character === "ren" && outfitMode === "starter" ? "starter-v2" : outfitMode;
+  const bodySource = `/characters/${character}-${outfitVariant}/${frame.file}.png`;
   const headVariant = hairStyle === 1 ? "base" : hairStyle === 2 ? "hair-short" : "hair-wave";
   const headSource = `/characters/${character}-${headVariant}/${frame.file}.png`;
   const hairMaskSource = `/characters/${character}-${headVariant}/${frame.file}.hair.png`;
@@ -60,7 +64,7 @@ export default function CharacterTurnaroundViewer({
 
   return (
     <div className="character-viewer reference-character-viewer" style={customStyle}>
-      <div className="reference-character" role="img" aria-label={`${name} 기본 캐릭터 ${frame.label} 모습`}>
+      <div className="reference-character" role="img" aria-label={`${name} 캐릭터 ${frame.label} 모습`}>
         <div className="avatar-body-transform">
           <TintedAvatarImage
             src={bodySource}
@@ -87,10 +91,16 @@ export default function CharacterTurnaroundViewer({
           />
         </div>
       </div>
+      <div className="zoom-controls" role="group" aria-label="캐릭터 확대 축소">
+        <button onClick={() => changeZoom(-.1)} aria-label="축소">−</button>
+        <button className="zoom-fit" onClick={() => setZoom(.9)} aria-label="전신 맞춤">전신</button>
+        <button onClick={() => changeZoom(.1)} aria-label="확대">＋</button>
+        <output aria-live="polite">{Math.round(zoom * 100)}%</output>
+      </div>
       <div className="rotation-controls" aria-label="캐릭터 방향 조작">
-        <button onClick={() => rotate(-1)} aria-label="왼쪽 방향 보기">‹</button>
+        <button onClick={() => rotate(-1)} aria-label="이전 방향 보기">‹</button>
         <span><b>{frame.label}</b> TURNAROUND</span>
-        <button onClick={() => rotate(1)} aria-label="오른쪽 방향 보기">›</button>
+        <button onClick={() => rotate(1)} aria-label="다음 방향 보기">›</button>
       </div>
     </div>
   );
