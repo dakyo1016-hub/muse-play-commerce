@@ -14,6 +14,7 @@ type TintedAvatarImageProps = {
   baseOutfit?: boolean;
   hairMaskSrc?: string;
   underwearMaskSrc?: string;
+  clothingMaskSrc?: string;
   className?: string;
 };
 
@@ -22,7 +23,7 @@ const rgb = (hex: string) => {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 };
 
-export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, character = "miyu", baseOutfit = false, hairMaskSrc, underwearMaskSrc, className = "" }: TintedAvatarImageProps) {
+export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, front, headLayer = false, bodyLayer = false, character = "miyu", baseOutfit = false, hairMaskSrc, underwearMaskSrc, clothingMaskSrc, className = "" }: TintedAvatarImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
       const eye = rgb(eyeColor);
       let hairMaskData: Uint8ClampedArray | null = null;
       let underwearMaskData: Uint8ClampedArray | null = null;
+      let clothingMaskData: Uint8ClampedArray | null = null;
 
       const loadMask = async (maskSrc?: string) => {
         if (!maskSrc) return null;
@@ -70,9 +72,10 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
         }
       };
 
-      [hairMaskData, underwearMaskData] = await Promise.all([
+      [hairMaskData, underwearMaskData, clothingMaskData] = await Promise.all([
         loadMask(hairMaskSrc),
         loadMask(underwearMaskSrc),
+        loadMask(clothingMaskSrc),
       ]);
 
       for (let offset = 0; offset < pixels.data.length; offset += 4) {
@@ -97,7 +100,8 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
         const isHair = hairMaskData
           ? hairMaskData[offset + 3] > 18 || (ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair))
           : ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair);
-        const isSkin = looksLikeSkin && !isHair;
+        const isProtectedClothing = bodyLayer && !!clothingMaskData && clothingMaskData[offset + 3] > 22;
+        const isSkin = looksLikeSkin && !isHair && !isProtectedClothing;
 
         // 몸은 하나의 연속 레이어로 변형하고, 헤드는 별도 레이어가 담당한다.
         // 상·하체를 잘라 확대할 때 생기던 손/골반 이음새를 없앤다.
@@ -134,7 +138,7 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
       }
       context.putImageData(pixels, 0, 0);
     };
-  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, character, baseOutfit, hairMaskSrc, underwearMaskSrc]);
+  }, [src, skinTone, hairColor, eyeColor, front, headLayer, bodyLayer, character, baseOutfit, hairMaskSrc, underwearMaskSrc, clothingMaskSrc]);
 
   return <canvas ref={canvasRef} className={`avatar-base-image ${className}`} aria-hidden="true" />;
 }
