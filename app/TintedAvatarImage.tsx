@@ -89,9 +89,10 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
         const g = pixels.data[offset + 1];
         const b = pixels.data[offset + 2];
         const light = (r * .3 + g * .59 + b * .11) / 255;
-        const isEyeZone = front && ny > .065 && ny < .175
-          && ((nx > .26 && nx < .49) || (nx > .51 && nx < .74));
-        const isEye = isEyeZone && r < 170 && g < 145 && b < 135;
+        const isEyeZone = front && ny > .072 && ny < .132
+          && ((nx > .30 && nx < .48) || (nx > .52 && nx < .70));
+        const isHairMaskPixel = !!hairMaskData && hairMaskData[offset + 3] > 18;
+        const isEye = isEyeZone && !isHairMaskPixel && r < 170 && g < 145 && b < 135;
         const looksLikeSkin = r > 145 && g > 78 && b > 42
           && r > g * 1.03 && g > b * 1.05
           && r - g < 118 && g - b < 105;
@@ -99,7 +100,7 @@ export default function TintedAvatarImage({ src, skinTone, hairColor, eyeColor, 
         const darkHair = r < 158 && g < 140 && b < 140;
         const isProtectedClothing = bodyLayer && !!clothingMaskData && clothingMaskData[offset + 3] > 22;
         const isHair = !isProtectedClothing && (hairMaskData
-          ? hairMaskData[offset + 3] > 18 || (ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair))
+          ? isHairMaskPixel
           : ny < .26 && !isEye && !looksLikeSkin && (auburnHair || darkHair));
         const isSkin = looksLikeSkin && !isHair && !isProtectedClothing;
 
