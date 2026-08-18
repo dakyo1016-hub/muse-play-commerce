@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import CharacterTurnaroundViewer from "./CharacterTurnaroundViewer";
+import CharacterViewer from "./CharacterViewer";
 import type { OutfitSelection } from "./LayeredOutfit";
 
 type Screen = "home" | "create" | "vote" | "shop";
@@ -29,6 +29,7 @@ const items: Item[] = [
   { id: "trench", category: "OUTER", kind: "TRENCH", pattern: "solid", brand: "ORDINARY OFFICE", name: "Light Single Trench Coat", price: 169000, likes: "4.7K", color: "#a99983" },
 
   { id: "top", category: "TOP", kind: "LAYERED TOP", pattern: "solid", brand: "SÉRIE STUDIO", name: "Ivory Layered Top", price: 49000, likes: "1.8K", color: "#eee7dc" },
+  { id: "henley-tee", category: "TOP", kind: "HENLEY TEE", pattern: "stripe", brand: "FORM STANDARD", name: "Soft Rib Henley T-Shirt", price: 42000, likes: "6.9K", color: "#777a7c" },
   { id: "shirt", category: "TOP", kind: "SHEER SHIRT", pattern: "nylon", brand: "ATELIER NINE", name: "Sheer Pocket Shirt", price: 72000, likes: "1.2K", color: "#afc4bf" },
   { id: "graphic-tee", category: "TOP", kind: "GRAPHIC TEE", pattern: "washed", brand: "PUBLIC RECORD", name: "Archive Graphic T-Shirt", price: 39000, likes: "8.9K", color: "#484b50" },
   { id: "rib-tank", category: "TOP", kind: "SLEEVELESS", pattern: "stripe", brand: "SECOND SKIN", name: "Ribbed Square Sleeveless", price: 32000, likes: "4.1K", color: "#d6c7b7" },
@@ -75,6 +76,16 @@ const items: Item[] = [
 
 const categories: Category[] = ["ALL", "OUTER", "TOP", "BOTTOM", "DRESS", "SHOES", "BAG", "ACC"];
 
+const catalogImages: Record<string,string> = {
+  cardigan:"/catalog/street-21.jpg", jacket:"/catalog/street-25.jpg", "leather-blouson":"/catalog/street-22.jpg", windbreaker:"/catalog/street-24.jpg", "hood-zipup":"/catalog/women-07.jpg", "tweed-jacket":"/catalog/street-25.jpg", trench:"/catalog/street-23.jpg",
+  top:"/catalog/women-01.jpg", "henley-tee":"/catalog/street-01.jpg", shirt:"/catalog/women-10.jpg", "graphic-tee":"/catalog/street-03.jpg", "rib-tank":"/catalog/street-10.jpg", "polo-knit":"/catalog/women-09.jpg", "oxford-shirt":"/catalog/women-03.jpg", sweatshirt:"/catalog/women-08.jpg", "mesh-top":"/catalog/women-10.jpg",
+  denim:"/catalog/street-16.jpg", skirt:"/catalog/women-12.jpg", "cargo-pants":"/catalog/street-13.jpg", bermuda:"/catalog/street-14.jpg", "parachute-skirt":"/catalog/street-19.jpg", slacks:"/catalog/street-17.jpg", "curve-denim":"/catalog/women-13.jpg", "track-pants":"/catalog/street-18.jpg",
+  dress:"/catalog/women-16.jpg", "mini-dress":"/catalog/women-17.jpg", "cargo-dress":"/catalog/women-18.jpg", "shirt-dress":"/catalog/women-19.jpg", "knit-dress":"/catalog/women-20.jpg",
+  pumps:"/catalog/accessory-06.jpg", sneakers:"/catalog/accessory-01.jpg", "retro-runner":"/catalog/accessory-02.jpg", loafer:"/catalog/accessory-03.jpg", sandal:"/catalog/accessory-04.jpg", derby:"/catalog/accessory-05.jpg",
+  bag:"/catalog/accessory-09.jpg", "mini-bag":"/catalog/accessory-10.jpg", crossbody:"/catalog/accessory-11.jpg", tote:"/catalog/accessory-12.jpg", backpack:"/catalog/accessory-13.jpg",
+  necklace:"/catalog/accessory-15.jpg", "ball-cap":"/catalog/accessory-16.jpg", "bucket-hat":"/catalog/accessory-17.jpg", belt:"/catalog/accessory-18.jpg", earrings:"/catalog/accessory-19.jpg", scarf:"/catalog/accessory-20.jpg",
+};
+
 const votePairs = [
   { scene: "FIRST DAY AT WORK", a: ["SOFT MINIMAL", "#b9a0c9"], b: ["CITY CLASSIC", "#768f89"] },
   { scene: "FRIDAY FIRST DATE", a: ["QUIET ROMANCE", "#c28798"], b: ["MODERN LAYER", "#6f7180"] },
@@ -101,7 +112,8 @@ export default function Home() {
   const [screen, setScreen] = useState<Screen>("home");
   const [category, setCategory] = useState<Category>("ALL");
   const [createMode, setCreateMode] = useState<"moodboard" | "avatar">("avatar");
-  const [selectedIds, setSelectedIds] = useState<string[]>(["top", "denim", "pumps"]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(["henley-tee", "denim", "sneakers"]);
+  const [selectionHistory, setSelectionHistory] = useState<string[][]>([]);
   const [styleChecked, setStyleChecked] = useState(false);
   const [styleModel, setStyleModel] = useState<"miyu" | "ren">("miyu");
   const [voteView, setVoteView] = useState<"model" | "flat">("model");
@@ -112,16 +124,6 @@ export default function Home() {
 
   const visibleItems = category === "ALL" ? items : items.filter((item) => item.category === category);
   const selectedItems = useMemo(() => items.filter((item) => selectedIds.includes(item.id)), [selectedIds]);
-  const outfitColors = useMemo(() => {
-    const selected = (category: Item["category"]) => selectedItems.find((item) => item.category === category)?.color;
-    return {
-      outer: selected("OUTER"),
-      top: selected("TOP"),
-      bottom: selected("BOTTOM"),
-      dress: selected("DRESS"),
-      shoes: selected("SHOES"),
-    };
-  }, [selectedItems]);
   const outfitSelection = useMemo<OutfitSelection>(() => {
     const one = (category: Item["category"]) => {
       const item = selectedItems.find((candidate) => candidate.category === category);
@@ -152,19 +154,40 @@ export default function Home() {
   };
 
   const toggleItem = (item: Item) => {
-    setSelectedIds((current) => {
-      if (current.includes(item.id)) return current.filter((id) => id !== item.id);
-      if (item.id === "ball-cap" || item.id === "bucket-hat") {
-        return [...current.filter((id) => id !== "ball-cap" && id !== "bucket-hat"), item.id];
-      }
+    const current = selectedIds;
+    let next: string[];
+    if (current.includes(item.id)) next = current.filter((id) => id !== item.id);
+    else if (item.id === "ball-cap" || item.id === "bucket-hat") {
+      next = [...current.filter((id) => id !== "ball-cap" && id !== "bucket-hat"), item.id];
+    } else {
       const conflicts = item.category === "DRESS"
         ? ["DRESS", "TOP", "BOTTOM"]
         : item.category === "TOP" || item.category === "BOTTOM"
           ? [item.category, "DRESS"]
           : [item.category];
       const sameCategory = item.category === "ACC" ? current : current.filter((id) => !conflicts.includes(items.find((candidate) => candidate.id === id)?.category ?? "ACC"));
-      return [...sameCategory, item.id];
+      next = [...sameCategory, item.id];
+    }
+    setSelectionHistory((history) => [...history.slice(-19), current]);
+    setSelectedIds(next);
+    setStyleChecked(false);
+  };
+
+  const undoOutfit = () => {
+    setSelectionHistory((history) => {
+      if (!history.length) return history;
+      setSelectedIds(history[history.length - 1]);
+      setStyleChecked(false);
+      return history.slice(0, -1);
     });
+  };
+
+  const resetOutfit = () => {
+    if (!selectedIds.length) return;
+    setSelectionHistory((history) => [...history.slice(-19), selectedIds]);
+    setSelectedIds([]);
+    setStyleChecked(false);
+    notify("착장을 모두 벗겼어요. 기본 이너웨어는 유지됩니다.");
   };
 
   const vote = (choice: "a" | "b") => {
@@ -209,26 +232,24 @@ export default function Home() {
         <div className="screen-heading"><div><small>CREATE LOOK</small><h1>쇼핑하듯 탐색하고,<br />룩으로 조합하세요.</h1></div><p>실제 커머스의 상품 정보가 스타일링 인터페이스로 연결됩니다.</p></div>
           <div className="create-toolbar"><div>{categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><span>{item}</span><small>{item === "ALL" ? items.length : items.filter((product) => product.category === item).length}</small></button>)}</div><aside>{["PRICE","COLOR","BRAND","STYLE","POPULAR ↓"].map((filter) => <button key={filter} onClick={() => notify(`${filter} 필터를 적용했어요`)}>{filter}</button>)}</aside></div>
         <div className="create-layout">
-          <section className="shop-items"><div className="shop-items-title"><span>SHOP ITEMS</span><b>{visibleItems.length} PRODUCTS</b></div><div className="shop-grid">{visibleItems.map((item) => { const selected = selectedIds.includes(item.id); return <article key={item.id} className={selected ? "selected" : ""}><button className="product-like" onClick={() => notify(`${item.name}을 찜했어요`)}>♡ {item.likes}</button><div className={`product-thumb category-${item.category.toLowerCase()} pattern-${item.pattern}`} style={{ "--product-color":item.color } as React.CSSProperties}><i className="product-art" /><span>{item.kind}</span></div><small>{item.brand}</small><h3>{item.name}</h3><strong>{won(item.price)}</strong><button className="try-button" onClick={() => toggleItem(item)}>{selected ? "REMOVE" : "TRY ON"}</button></article>; })}</div></section>
-          <aside className="look-builder"><div className="builder-top"><div><span>STYLE VIEW</span><button className={createMode === "avatar" ? "active" : ""} onClick={() => setCreateMode("avatar")}>STYLE MODEL</button><button className={createMode === "moodboard" ? "active" : ""} onClick={() => setCreateMode("moodboard")}>FLAT LAY</button></div><small>AUTOSAVED</small></div>
+          <section className="shop-items"><div className="shop-items-title"><span>SHOP ITEMS</span><b>{visibleItems.length} PRODUCTS</b></div><div className="shop-grid">{visibleItems.map((item) => { const selected = selectedIds.includes(item.id); return <article key={item.id} className={selected ? "selected" : ""}><button className="product-like" onClick={() => notify(`${item.name}을 찜했어요`)}>♡ {item.likes}</button><div className="product-thumb"><img className="product-photo" src={catalogImages[item.id]} alt={`${item.brand} ${item.name}`} loading="lazy" /><span>{item.kind}</span></div><small>{item.brand}</small><h3>{item.name}</h3><strong>{won(item.price)}</strong><button className="try-button" onClick={() => toggleItem(item)}>{selected ? "REMOVE" : "TRY ON"}</button></article>; })}</div></section>
+          <aside className="look-builder"><div className="builder-top"><div><span>STYLE VIEW</span><button className={createMode === "avatar" ? "active" : ""} onClick={() => setCreateMode("avatar")}>STYLE MODEL</button><button className={createMode === "moodboard" ? "active" : ""} onClick={() => setCreateMode("moodboard")}>FLAT LAY</button></div><small>AUTOSAVED</small></div><div className="outfit-history-actions"><button onClick={undoOutfit} disabled={!selectionHistory.length}>↶ UNDO</button><button onClick={resetOutfit} disabled={!selectedIds.length}>RESET OUTFIT</button></div>
             {createMode === "moodboard" ? (
               <div className="moodboard-canvas"><em>FRIDAY · SEONGSU · 7PM</em>{selectedItems.map((item,index) => <div key={item.id} className={`mood-product mood-product-${index % 6}`}><i style={{ background:item.color }} /><span>{item.category}</span></div>)}<strong>FIRST<br />DATE</strong></div>
             ) : <>
               <div className="avatar-canvas miyu-stage">
                 <span className="miyu-label">STYLE MODEL · {styleModel.toUpperCase()}</span>
-                <CharacterTurnaroundViewer
+                <CharacterViewer
                   key={`style-model-${styleModel}`}
                   character={styleModel}
-                  outfitMode="base"
+                  selection={outfitSelection}
                   height={styleModel === "miyu" ? 165 : 175}
                   weight={styleModel === "miyu" ? 55 : 70}
-                  bodyShape="average"
+                  bodyShape={50}
                   skinTone={styleModel === "miyu" ? "#eab18c" : "#d39a78"}
                   hairStyle={1}
                   hairColor={styleModel === "miyu" ? "#8b3826" : "#2b2422"}
                   eyeColor={styleModel === "miyu" ? "#43251f" : "#35424a"}
-                  outfitColors={outfitColors}
-                  outfitSelection={outfitSelection}
                 />
               </div>
               <div className="style-model-selector"><div><small>MUSE STYLE MODEL</small><strong>외모를 만드는 대신, 스타일링에 집중하세요.</strong></div><button className={styleModel === "miyu" ? "active" : ""} onClick={() => setStyleModel("miyu")}><img src="/characters/miyu-starter/front.png" alt="미유" /><span><b>MIYU</b>MODEL 01</span></button><button className={styleModel === "ren" ? "active" : ""} onClick={() => setStyleModel("ren")}><img src="/characters/ren-starter-v2/front.png" alt="렌" /><span><b>REN</b>MODEL 02</span></button></div>
