@@ -1,280 +1,53 @@
 "use client";
+import {useEffect,useMemo,useRef,useState} from "react";
 
-import { useMemo, useState } from "react";
-import CharacterViewer from "./CharacterViewer";
-import type { OutfitSelection } from "./LayeredOutfit";
+type Screen="home"|"create"|"vote"|"shop";
+type Category="ALL"|"OUTER"|"TOP"|"BOTTOM"|"DRESS"|"SHOES"|"BAG"|"ACC";
+type Item={id:string;category:Exclude<Category,"ALL">;brand:string;name:string;price:number;likes:string;image:string};
+type Position={x:number;y:number;rotation:number};
 
-type Screen = "home" | "create" | "vote" | "shop";
-type Category = "ALL" | "OUTER" | "TOP" | "BOTTOM" | "DRESS" | "SHOES" | "BAG" | "ACC";
-
-type Item = {
-  id: string;
-  category: Exclude<Category, "ALL">;
-  kind: string;
-  pattern: "solid" | "stripe" | "check" | "washed" | "nylon";
-  brand: string;
-  name: string;
-  price: number;
-  likes: string;
-  color: string;
-};
-
-const items: Item[] = [
-  { id: "cardigan", category: "OUTER", kind: "CARDIGAN", pattern: "solid", brand: "MORNING DEW", name: "Muted Lilac Cardigan", price: 49000, likes: "2.1K", color: "#b9a0c9" },
-  { id: "jacket", category: "OUTER", kind: "CROP JACKET", pattern: "solid", brand: "RECTO", name: "Linen Crop Jacket", price: 129000, likes: "3.8K", color: "#b9ad9c" },
-  { id: "leather-blouson", category: "OUTER", kind: "BLOUSON", pattern: "washed", brand: "NORTH OF CITY", name: "Washed Vegan Leather Blouson", price: 158000, likes: "7.4K", color: "#5d4a43" },
-  { id: "windbreaker", category: "OUTER", kind: "WINDBREAKER", pattern: "nylon", brand: "STILL ACTIVE", name: "Light Nylon Windbreaker", price: 89000, likes: "5.6K", color: "#849589" },
-  { id: "hood-zipup", category: "OUTER", kind: "HOOD ZIP-UP", pattern: "washed", brand: "COMMON PROJECT", name: "Vintage Wash Hood Zip-Up", price: 79000, likes: "9.2K", color: "#77797d" },
-  { id: "tweed-jacket", category: "OUTER", kind: "TWEED", pattern: "check", brand: "LE PETIT ATELIER", name: "Soft Tweed Collar Jacket", price: 149000, likes: "3.3K", color: "#c7b8a9" },
-  { id: "trench", category: "OUTER", kind: "TRENCH", pattern: "solid", brand: "ORDINARY OFFICE", name: "Light Single Trench Coat", price: 169000, likes: "4.7K", color: "#a99983" },
-
-  { id: "top", category: "TOP", kind: "LAYERED TOP", pattern: "solid", brand: "SÉRIE STUDIO", name: "Ivory Layered Top", price: 49000, likes: "1.8K", color: "#eee7dc" },
-  { id: "henley-tee", category: "TOP", kind: "HENLEY TEE", pattern: "stripe", brand: "FORM STANDARD", name: "Soft Rib Henley T-Shirt", price: 42000, likes: "6.9K", color: "#777a7c" },
-  { id: "shirt", category: "TOP", kind: "SHEER SHIRT", pattern: "nylon", brand: "ATELIER NINE", name: "Sheer Pocket Shirt", price: 72000, likes: "1.2K", color: "#afc4bf" },
-  { id: "graphic-tee", category: "TOP", kind: "GRAPHIC TEE", pattern: "washed", brand: "PUBLIC RECORD", name: "Archive Graphic T-Shirt", price: 39000, likes: "8.9K", color: "#484b50" },
-  { id: "rib-tank", category: "TOP", kind: "SLEEVELESS", pattern: "stripe", brand: "SECOND SKIN", name: "Ribbed Square Sleeveless", price: 32000, likes: "4.1K", color: "#d6c7b7" },
-  { id: "polo-knit", category: "TOP", kind: "POLO KNIT", pattern: "stripe", brand: "MAISON 27", name: "Open Collar Stripe Knit", price: 69000, likes: "6.2K", color: "#7892a1" },
-  { id: "oxford-shirt", category: "TOP", kind: "OXFORD SHIRT", pattern: "solid", brand: "STUDIO BASIC", name: "Relaxed Oxford Shirt", price: 59000, likes: "7.8K", color: "#b3c6d5" },
-  { id: "sweatshirt", category: "TOP", kind: "SWEATSHIRT", pattern: "washed", brand: "SUNDAY SERVICE", name: "Pigment Logo Sweatshirt", price: 65000, likes: "9.8K", color: "#8b7d75" },
-  { id: "mesh-top", category: "TOP", kind: "MESH TOP", pattern: "nylon", brand: "AFTER IMAGE", name: "Layered Mesh Long Sleeve", price: 54000, likes: "2.9K", color: "#8e7d9a" },
-
-  { id: "denim", category: "BOTTOM", kind: "BOOTCUT DENIM", pattern: "washed", brand: "BLUE HOUR", name: "Indigo Bootcut Denim", price: 69000, likes: "4.2K", color: "#34476f" },
-  { id: "skirt", category: "BOTTOM", kind: "PLEATS SKIRT", pattern: "solid", brand: "MOMENT EDITION", name: "Soft Pleats Skirt", price: 89000, likes: "2.7K", color: "#78617f" },
-  { id: "cargo-pants", category: "BOTTOM", kind: "CARGO PANTS", pattern: "washed", brand: "UTILITY CLUB", name: "Wide Pocket Cargo Pants", price: 79000, likes: "8.4K", color: "#727663" },
-  { id: "bermuda", category: "BOTTOM", kind: "BERMUDA", pattern: "solid", brand: "MONO YARD", name: "Two Tuck Bermuda Shorts", price: 59000, likes: "5.3K", color: "#67676b" },
-  { id: "parachute-skirt", category: "BOTTOM", kind: "CARGO SKIRT", pattern: "nylon", brand: "ROUTE 03", name: "Parachute String Maxi Skirt", price: 76000, likes: "6.8K", color: "#869088" },
-  { id: "slacks", category: "BOTTOM", kind: "WIDE SLACKS", pattern: "solid", brand: "ORDINARY OFFICE", name: "Relaxed Wide Slacks", price: 82000, likes: "7.1K", color: "#3e4148" },
-  { id: "curve-denim", category: "BOTTOM", kind: "CURVE DENIM", pattern: "washed", brand: "FADED BLUE", name: "Washed Curve Denim Pants", price: 85000, likes: "10.2K", color: "#71859b" },
-  { id: "track-pants", category: "BOTTOM", kind: "TRACK PANTS", pattern: "stripe", brand: "STILL ACTIVE", name: "Side Line Jersey Pants", price: 68000, likes: "6.5K", color: "#485552" },
-
-  { id: "dress", category: "DRESS", kind: "SLIP DRESS", pattern: "solid", brand: "ARCHIVE 101", name: "Bias Slip Dress", price: 139000, likes: "3.1K", color: "#a86f7f" },
-  { id: "mini-dress", category: "DRESS", kind: "MINI DRESS", pattern: "solid", brand: "MELLOW ROOM", name: "Square Neck Mini Dress", price: 89000, likes: "5.5K", color: "#454750" },
-  { id: "cargo-dress", category: "DRESS", kind: "CARGO DRESS", pattern: "nylon", brand: "UTILITY CLUB", name: "Parachute Cargo Dress", price: 99000, likes: "4.9K", color: "#858b83" },
-  { id: "shirt-dress", category: "DRESS", kind: "SHIRT DRESS", pattern: "stripe", brand: "ATELIER NINE", name: "Pin Stripe Shirt Dress", price: 119000, likes: "3.7K", color: "#91a6b0" },
-  { id: "knit-dress", category: "DRESS", kind: "KNIT DRESS", pattern: "solid", brand: "MAISON 27", name: "Soft Rib Knit Maxi Dress", price: 108000, likes: "6.3K", color: "#8f8179" },
-
-  { id: "pumps", category: "SHOES", kind: "PUMPS", pattern: "solid", brand: "STEP BY STEP", name: "Square Pumps", price: 58000, likes: "2.4K", color: "#76a29a" },
-  { id: "sneakers", category: "SHOES", kind: "PLATFORM", pattern: "solid", brand: "GROUND STANDARD", name: "Cream Platform Sneakers", price: 64000, likes: "5.1K", color: "#d7d0c4" },
-  { id: "retro-runner", category: "SHOES", kind: "RETRO RUNNER", pattern: "washed", brand: "PACE MAKER", name: "Silver Mesh Retro Runner", price: 109000, likes: "11.2K", color: "#9ca1a4" },
-  { id: "loafer", category: "SHOES", kind: "LOAFER", pattern: "solid", brand: "OFFICE HOURS", name: "Classic Penny Loafer", price: 98000, likes: "7.9K", color: "#4a3833" },
-  { id: "sandal", category: "SHOES", kind: "SANDAL", pattern: "solid", brand: "STEP BY STEP", name: "Platform Strap Sandal", price: 72000, likes: "4.6K", color: "#83726c" },
-  { id: "derby", category: "SHOES", kind: "DERBY", pattern: "washed", brand: "GROUND STANDARD", name: "Soft Suede Derby Shoes", price: 119000, likes: "6.7K", color: "#8a6f58" },
-
-  { id: "bag", category: "BAG", kind: "SHOULDER BAG", pattern: "solid", brand: "MARGE SHERWOOD", name: "Soft Baguette Bag", price: 89000, likes: "6.8K", color: "#413a3b" },
-  { id: "mini-bag", category: "BAG", kind: "BOSTON BAG", pattern: "solid", brand: "FORME", name: "Mint Mini Boston Bag", price: 59000, likes: "1.9K", color: "#9fbdb5" },
-  { id: "crossbody", category: "BAG", kind: "CROSSBODY", pattern: "nylon", brand: "UTILITY CLUB", name: "Nylon Pocket Crossbody", price: 65000, likes: "8.1K", color: "#525b59" },
-  { id: "tote", category: "BAG", kind: "TOTE BAG", pattern: "stripe", brand: "SUNDAY SERVICE", name: "Heavy Canvas Market Tote", price: 42000, likes: "5.8K", color: "#b7a98c" },
-  { id: "backpack", category: "BAG", kind: "BACKPACK", pattern: "nylon", brand: "ROUTE 03", name: "Utility String Backpack", price: 89000, likes: "9.4K", color: "#626a70" },
-
-  { id: "necklace", category: "ACC", kind: "NECKLACE", pattern: "solid", brand: "NUMBERING", name: "Curve Chain Necklace", price: 39000, likes: "2.6K", color: "#d7bd76" },
-  { id: "ball-cap", category: "ACC", kind: "BALL CAP", pattern: "washed", brand: "PUBLIC RECORD", name: "Washed Lettering Ball Cap", price: 39000, likes: "8.7K", color: "#5c6370" },
-  { id: "bucket-hat", category: "ACC", kind: "BUCKET HAT", pattern: "nylon", brand: "ROUTE 03", name: "Light Nylon Bucket Hat", price: 45000, likes: "4.3K", color: "#8c948e" },
-  { id: "belt", category: "ACC", kind: "BELT", pattern: "solid", brand: "OFFICE HOURS", name: "Slim Leather Belt", price: 42000, likes: "6.1K", color: "#4d3831" },
-  { id: "earrings", category: "ACC", kind: "EARRINGS", pattern: "solid", brand: "NUMBERING", name: "Mini Silver Hoop Earrings", price: 48000, likes: "5.9K", color: "#b9bdc0" },
-  { id: "scarf", category: "ACC", kind: "SCARF", pattern: "check", brand: "FORME", name: "Pattern Silky Mini Scarf", price: 35000, likes: "3.8K", color: "#9c7282" },
+const ITEMS:Item[]=[
+ {id:"cardigan",category:"OUTER",brand:"MORNING DEW",name:"Muted Lilac Cardigan",price:49000,likes:"2.1K",image:"/catalog/street-21.jpg"},{id:"jacket",category:"OUTER",brand:"RECTO",name:"Linen Crop Jacket",price:129000,likes:"1.4K",image:"/catalog/street-25.jpg"},{id:"windbreaker",category:"OUTER",brand:"STILL ACTIVE",name:"Light Nylon Windbreaker",price:89000,likes:"3.8K",image:"/catalog/street-24.jpg"},
+ {id:"top",category:"TOP",brand:"SÉRIE STUDIO",name:"Ivory Layered Top",price:49000,likes:"1.9K",image:"/catalog/women-01.jpg"},{id:"henley",category:"TOP",brand:"FORM STANDARD",name:"Soft Rib Henley Tee",price:42000,likes:"2.6K",image:"/catalog/street-01.jpg"},{id:"shirt",category:"TOP",brand:"ATELIER NINE",name:"Sheer Pocket Shirt",price:72000,likes:"1.7K",image:"/catalog/women-10.jpg"},
+ {id:"denim",category:"BOTTOM",brand:"BLUE HOUR",name:"Indigo Bootcut Denim",price:69000,likes:"4.2K",image:"/catalog/street-16.jpg"},{id:"skirt",category:"BOTTOM",brand:"MOMENT EDITION",name:"Soft Pleats Skirt",price:89000,likes:"3.1K",image:"/catalog/women-12.jpg"},{id:"cargo",category:"BOTTOM",brand:"UTILITY CLUB",name:"Wide Pocket Cargo",price:79000,likes:"2.8K",image:"/catalog/street-13.jpg"},
+ {id:"dress",category:"DRESS",brand:"ARCHIVE 101",name:"Bias Slip Dress",price:139000,likes:"5.4K",image:"/catalog/women-16.jpg"},{id:"mini-dress",category:"DRESS",brand:"MELLOW ROOM",name:"Square Neck Mini Dress",price:89000,likes:"2.2K",image:"/catalog/women-17.jpg"},{id:"sneakers",category:"SHOES",brand:"GROUND STANDARD",name:"Cream Platform Sneakers",price:64000,likes:"6.1K",image:"/catalog/accessory-01.jpg"},{id:"loafer",category:"SHOES",brand:"OFFICE HOURS",name:"Classic Penny Loafer",price:98000,likes:"1.8K",image:"/catalog/accessory-03.jpg"},
+ {id:"bag",category:"BAG",brand:"MARGE SHERWOOD",name:"Soft Baguette Bag",price:89000,likes:"4.7K",image:"/catalog/accessory-09.jpg"},{id:"mini-bag",category:"BAG",brand:"FORME",name:"Mint Mini Boston Bag",price:59000,likes:"1.3K",image:"/catalog/accessory-10.jpg"},{id:"necklace",category:"ACC",brand:"NUMBERING",name:"Curve Chain Necklace",price:39000,likes:"2.5K",image:"/catalog/accessory-15.jpg"}
 ];
+const CATEGORIES:Category[]=["ALL","TOP","BOTTOM","OUTER","DRESS","SHOES","BAG","ACC"];
+const VOTES=[{a:["henley","denim","sneakers"],b:["top","cargo","sneakers"],an:"SOFT MINIMAL",bn:"CITY LAYERED"},{a:["top","cargo","sneakers"],b:["henley","skirt","sneakers"],an:"CLEAN UTILITY",bn:"QUIET PREP"},{a:["cardigan","denim","sneakers"],b:["henley","denim","loafer"],an:"SOFT COLOR",bn:"DARK CLASSIC"}];
+const AUTO:Record<string,Position>={OUTER:{x:27,y:32,rotation:-4},TOP:{x:57,y:28,rotation:3},BOTTOM:{x:59,y:61,rotation:-2},DRESS:{x:50,y:53,rotation:1},SHOES:{x:31,y:81,rotation:4},BAG:{x:80,y:58,rotation:-5},ACC:{x:79,y:24,rotation:6}};
+const won=(n:number)=>`₩${n.toLocaleString("ko-KR")}`;
+const byIds=(ids:string[])=>ITEMS.filter(i=>ids.includes(i.id));
+const sum=(list:Item[])=>list.reduce((n,i)=>n+i.price,0);
 
-const categories: Category[] = ["ALL", "OUTER", "TOP", "BOTTOM", "DRESS", "SHOES", "BAG", "ACC"];
+function FlatLay({items,interactive=false,positions={},onPosition}:{items:Item[];interactive?:boolean;positions?:Record<string,Position>;onPosition?:(id:string,p:Position)=>void}){
+ const board=useRef<HTMLDivElement>(null);const drag=useRef<{id:string;sx:number;sy:number;p:Position}|null>(null);
+ const down=(e:React.PointerEvent<HTMLElement>,item:Item)=>{if(!interactive)return;e.currentTarget.setPointerCapture(e.pointerId);drag.current={id:item.id,sx:e.clientX,sy:e.clientY,p:positions[item.id]??AUTO[item.category]}};
+ const move=(e:React.PointerEvent<HTMLElement>)=>{if(!drag.current||!board.current||!onPosition)return;const b=board.current.getBoundingClientRect(),d=drag.current;onPosition(d.id,{...d.p,x:Math.max(10,Math.min(90,d.p.x+(e.clientX-d.sx)/b.width*100)),y:Math.max(14,Math.min(89,d.p.y+(e.clientY-d.sy)/b.height*100))})};
+ return <div className="flat-board" ref={board}><div className="board-meta"><b>MUSE / OUTFIT CANVAS</b><span>{interactive?"DRAG TO ARRANGE":"COMMUNITY LOOK"}</span></div>{items.map(item=>{const p=positions[item.id]??AUTO[item.category];return <article key={item.id} className={`flat-item flat-${item.category.toLowerCase()}`} style={{left:`${p.x}%`,top:`${p.y}%`,"--rotation":`${p.rotation}deg`} as React.CSSProperties} onPointerDown={e=>down(e,item)} onPointerMove={move} onPointerUp={()=>drag.current=null}><span>{item.category}</span><img src={item.image} alt={`${item.brand} ${item.name}`} draggable={false}/></article>})}</div>
+}
+function Check({ok,children}:{ok:boolean;children:React.ReactNode}){return <p className={`check ${ok?"ok":""}`}><b>{ok?"✓":"○"}</b>{children}</p>}
+function SelectedList({items}:{items:Item[]}){return <div className="selected-list">{items.map(item=><div key={item.id}><img src={item.image} alt=""/><span><small>{item.category}</small>{item.name}</span><b>{won(item.price)}</b></div>)}</div>}
 
-const catalogImages: Record<string,string> = {
-  cardigan:"/catalog/street-21.jpg", jacket:"/catalog/street-25.jpg", "leather-blouson":"/catalog/street-22.jpg", windbreaker:"/catalog/street-24.jpg", "hood-zipup":"/catalog/women-07.jpg", "tweed-jacket":"/catalog/street-25.jpg", trench:"/catalog/street-23.jpg",
-  top:"/catalog/women-01.jpg", "henley-tee":"/catalog/street-01.jpg", shirt:"/catalog/women-10.jpg", "graphic-tee":"/catalog/street-03.jpg", "rib-tank":"/catalog/street-10.jpg", "polo-knit":"/catalog/women-09.jpg", "oxford-shirt":"/catalog/women-03.jpg", sweatshirt:"/catalog/women-08.jpg", "mesh-top":"/catalog/women-10.jpg",
-  denim:"/catalog/street-16.jpg", skirt:"/catalog/women-12.jpg", "cargo-pants":"/catalog/street-13.jpg", bermuda:"/catalog/street-14.jpg", "parachute-skirt":"/catalog/street-19.jpg", slacks:"/catalog/street-17.jpg", "curve-denim":"/catalog/women-13.jpg", "track-pants":"/catalog/street-18.jpg",
-  dress:"/catalog/women-16.jpg", "mini-dress":"/catalog/women-17.jpg", "cargo-dress":"/catalog/women-18.jpg", "shirt-dress":"/catalog/women-19.jpg", "knit-dress":"/catalog/women-20.jpg",
-  pumps:"/catalog/accessory-06.jpg", sneakers:"/catalog/accessory-01.jpg", "retro-runner":"/catalog/accessory-02.jpg", loafer:"/catalog/accessory-03.jpg", sandal:"/catalog/accessory-04.jpg", derby:"/catalog/accessory-05.jpg",
-  bag:"/catalog/accessory-09.jpg", "mini-bag":"/catalog/accessory-10.jpg", crossbody:"/catalog/accessory-11.jpg", tote:"/catalog/accessory-12.jpg", backpack:"/catalog/accessory-13.jpg",
-  necklace:"/catalog/accessory-15.jpg", "ball-cap":"/catalog/accessory-16.jpg", "bucket-hat":"/catalog/accessory-17.jpg", belt:"/catalog/accessory-18.jpg", earrings:"/catalog/accessory-19.jpg", scarf:"/catalog/accessory-20.jpg",
-};
-
-const votePairs = [
-  { scene: "FIRST DAY AT WORK", a: ["SOFT MINIMAL", "#b9a0c9"], b: ["CITY CLASSIC", "#768f89"] },
-  { scene: "FRIDAY FIRST DATE", a: ["QUIET ROMANCE", "#c28798"], b: ["MODERN LAYER", "#6f7180"] },
-  { scene: "HOTEL WEDDING", a: ["SOFT FORMAL", "#a58a72"], b: ["DARK FEMININE", "#69546b"] },
-  { scene: "8H FESTIVAL", a: ["SPORTY LIGHT", "#729d93"], b: ["RETRO COLOR", "#bc8b63"] },
-  { scene: "JEJU LAST DAY", a: ["OFF-DUTY", "#8c8175"], b: ["CLEAN CASUAL", "#9fb4c1"] },
-] as const;
-
-const voteDetails = [
-  { a: { user:"USER A", price:184000, products:["Lilac Cardigan","Indigo Denim","Cream Sneakers"] }, b: { user:"USER B", price:196000, products:["Ivory Shirt","Slip Dress","Square Pumps"] } },
-  { a: { user:"USER A", price:176000, products:["Layered Top","Pleats Skirt","Mini Boston Bag"] }, b: { user:"USER B", price:189000, products:["Linen Jacket","Bootcut Denim","Chain Necklace"] } },
-  { a: { user:"USER A", price:278000, products:["Bias Dress","Crop Jacket","Slingback"] }, b: { user:"USER B", price:296000, products:["Sheer Shirt","Soft Skirt","Baguette Bag"] } },
-  { a: { user:"USER A", price:158000, products:["Light Shirt","Bootcut Denim","Sneakers"] }, b: { user:"USER B", price:172000, products:["Color Cardigan","Pleats Skirt","Mini Bag"] } },
-  { a: { user:"USER A", price:98000, products:["My Jeans","Ivory Top","Chain Necklace"] }, b: { user:"USER B", price:106000, products:["Cream Shirt","Mini Skirt","Sneakers"] } },
-] as const;
-
-const won = (value: number) => `₩${value.toLocaleString("ko-KR")}`;
-
-function FlatLook({ color, tone = "#34476f", compact = false }: { color: string; tone?: string; compact?: boolean }) {
-  return <div className={`flat-look ${compact ? "compact" : ""}`} style={{ "--flat-main":color,"--flat-tone":tone } as React.CSSProperties}><i className="flat-top" /><i className="flat-bottom" /><i className="flat-shoes" /><i className="flat-bag" /><i className="flat-acc" /></div>;
+export default function MusePlay(){
+ const[screen,setScreen]=useState<Screen>("home"),[category,setCategory]=useState<Category>("ALL"),[selectedIds,setSelectedIds]=useState(["henley","denim","sneakers"]),[history,setHistory]=useState<string[][]>([]),[positions,setPositions]=useState<Record<string,Position>>({}),[challenge,setChallenge]=useState(false),[seconds,setSeconds]=useState(180),[completed,setCompleted]=useState(false),[voteRound,setVoteRound]=useState(0),[cheaper,setCheaper]=useState(false),[toast,setToast]=useState("");
+ const selected=useMemo(()=>byIds(selectedIds),[selectedIds]),visible=category==="ALL"?ITEMS:ITEMS.filter(i=>i.category===category),total=sum(selected),cats=new Set(selected.map(i=>i.category));
+ const budget=total>0&&total<=200000,required=cats.has("SHOES")&&((cats.has("TOP")&&cats.has("BOTTOM"))||cats.has("DRESS")),count=selected.length>=3,ready=budget&&required&&count;
+ useEffect(()=>{if(!challenge||screen!=="create"||completed||seconds<=0)return;const id=setInterval(()=>setSeconds(v=>Math.max(0,v-1)),1000);return()=>clearInterval(id)},[challenge,screen,completed,seconds]);
+ const notify=(s:string)=>{setToast(s);setTimeout(()=>setToast(""),1900)},go=(s:Screen)=>{setScreen(s);scrollTo({top:0,behavior:"smooth"})},start=()=>{setSeconds(180);setChallenge(true);setCompleted(false);go("create")};
+ const toggle=(item:Item)=>{setHistory(h=>[...h.slice(-19),selectedIds]);if(selectedIds.includes(item.id)){setSelectedIds(a=>a.filter(id=>id!==item.id));return}const conflicts=item.category==="DRESS"?["DRESS","TOP","BOTTOM"]:["TOP","BOTTOM"].includes(item.category)?[item.category,"DRESS"]:[item.category],base=item.category==="ACC"?selectedIds:selectedIds.filter(id=>!conflicts.includes(ITEMS.find(i=>i.id===id)?.category??"ACC"));setSelectedIds([...base,item.id])};
+ const time=`${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
+ const Header=<header className="site-header"><button className="wordmark" onClick={()=>go("home")}><b>MUSE PLAY</b><span>PLAY COMMERCE · PUBLIC BETA</span></button><nav>{(["home","create","vote","shop"]as Screen[]).map(s=><button key={s} className={screen===s?"active":""} onClick={()=>{if(s==="create")setCompleted(false);go(s)}}>{s==="home"?"PLAY HOME":s==="shop"?"SHOP THE LOOK":s.toUpperCase()}</button>)}</nav><p>CREATE · VOTE · SHOP<br/><span>REAL PRODUCT DATA</span></p></header>;
+ return <main>{Header}
+ {screen==="home"&&<div className="page home"><section className="hero"><small>WHAT WOULD YOU WEAR?</small><h1>STYLE THE<br/>MOMENT.</h1><p>Turn real products into a playable fashion edit.<br/>Create the look, enter the battle, shop what wins.</p><div>CREATE　→　VOTE　→　DISCOVER　→　SHOP</div><button className="primary yellow" onClick={start}>START CHALLENGE →</button></section><section className="mission"><div><small>MIYU&apos;S MISSION · BUDGET ≤ ₩200K</small><h2>FRIDAY DATE<br/>IN SEONGSU</h2><blockquote>“오늘 저녁 갑자기 소개팅이 생겼어.<br/>20만원 안으로 코디해줄래?”</blockquote><p><span>29°C</span><span>3 MIN</span><span>TOP + BOTTOM + SHOES</span></p><button className="primary" onClick={start}>HELP MIYU →</button></div><figure><div><img src="/miyu-doll-atlas-v2.png" alt="Mission guide MIYU"/></div><b>MISSION GUIDE · MIYU</b></figure></section><section className="modules">{[["01","CREATE LOOK","Play with real products on a flat lay canvas."],["02","VOTE NOW","Vote for the style, not the person."],["03","SHOP THE LOOK","Move from community inspiration to cart."],["04","BEAUTY PLAY","A separate play type · coming soon."]].map((x,i)=><button key={x[0]} onClick={()=>i===0?go("create"):i===1?go("vote"):i===2?go("shop"):notify("BEAUTY PLAY is coming next.")}><small>{x[0]}</small><b>{x[1]}</b><span>{x[2]}</span><i>→</i></button>)}</section></div>}
+ {screen==="create"&&!completed&&<div className="page"><Heading kicker="CREATE LOOK" title="BUILD THE FRIDAY SEONGSU EDIT." copy="Real products become game items · drag them into your editorial layout."/><div className="categories">{CATEGORIES.map(c=><button className={c===category?"active":""} key={c} onClick={()=>setCategory(c)}>{c} <small>{c==="ALL"?ITEMS.length:ITEMS.filter(i=>i.category===c).length}</small></button>)}</div><div className="create-layout"><section className="products"><Title left="DISCOVER PRODUCTS" right={`${visible.length} PRODUCTS`}/><div className="product-grid">{visible.map(item=><article className={selectedIds.includes(item.id)?"selected":""} key={item.id}><img src={item.image} alt={`${item.brand} ${item.name}`}/><small>{item.brand}</small><h3>{item.name}</h3><div><b>{won(item.price)}</b><span>♡ {item.likes}</span></div><button onClick={()=>toggle(item)}>{selectedIds.includes(item.id)?"REMOVE":"ADD +"}</button></article>)}</div></section><section className="canvas-panel"><Title left="OUTFIT CANVAS · FLAT LAY" right={challenge?`${time} LEFT`:"FREE PLAY · NO TIMER"}/><FlatLay items={selected} interactive positions={positions} onPosition={(id,p)=>setPositions(v=>({...v,[id]:p}))}/><p className="canvas-help">AUTO-ARRANGED BY CATEGORY · DRAG ANY PRODUCT TO FINE-TUNE</p></section><aside className="challenge"><small>TODAY&apos;S MISSION</small><h2>FRIDAY · SEONGSU<br/>FIRST DATE</h2><p>SEOUL · 7PM · 29°C<br/>BUDGET ≤ ₩200,000</p><div className="edit-actions"><button disabled={!history.length} onClick={()=>{const p=history.at(-1);if(p){setSelectedIds(p);setHistory(h=>h.slice(0,-1))}}}>UNDO</button><button onClick={()=>{setHistory(h=>[...h,selectedIds]);setSelectedIds([])}}>RESET</button></div><h3>CHALLENGE CHECK</h3><Check ok={budget}>Budget under ₩200,000</Check><Check ok={required}>TOP + BOTTOM + SHOES</Check><Check ok={count}>{selected.length} items selected</Check><SelectedList items={selected}/><footer><span>{selected.length} ITEMS</span><b>{won(total)}</b></footer><p className={ready?"ready":""}>{ready?"READY TO ENTER":"COMPLETE THE CONDITIONS"}</p><button className="primary" disabled={!ready} onClick={()=>{setChallenge(false);setCompleted(true)}}>SUBMIT LOOK →</button></aside></div></div>}
+ {screen==="create"&&completed&&<div className="page"><Heading kicker="LOOK COMPLETE" title="MIYU ♥ YOUR LOOK" copy="A community-ready card made from the same real product data."/><div className="result"><section><small>LOOK #1842 · COMMUNITY EDIT</small><FlatLay items={selected}/><p>CREATE WITH PRODUCTS. VOTE FOR THE STYLE.</p></section><aside><small>FRIDAY SEONGSU DATE</small><h2>LOOK #1842</h2><h3>{selected.length} ITEMS<br/>TOTAL {won(total)}<br/>by USER</h3><SelectedList items={selected}/><div><button onClick={()=>notify("LOOK #1842 saved.")}>SAVE LOOK</button><button className="primary" onClick={()=>go("vote")}>ENTER BATTLE →</button><button onClick={()=>setCompleted(false)}>← EDIT LOOK</button></div></aside></div></div>}
+ {screen==="vote"&&<Vote round={voteRound} setRound={setVoteRound} goShop={()=>go("shop")}/>} 
+ {screen==="shop"&&<Shop cheaper={cheaper} setCheaper={setCheaper} notify={notify}/>} {toast&&<div className="toast">{toast}</div>}</main>
 }
 
-export default function Home() {
-  const [screen, setScreen] = useState<Screen>("home");
-  const [category, setCategory] = useState<Category>("ALL");
-  const [createMode, setCreateMode] = useState<"moodboard" | "avatar">("avatar");
-  const [selectedIds, setSelectedIds] = useState<string[]>(["henley-tee", "denim", "sneakers"]);
-  const [selectionHistory, setSelectionHistory] = useState<string[][]>([]);
-  const [styleChecked, setStyleChecked] = useState(false);
-  const [styleModel, setStyleModel] = useState<"miyu" | "ren">("miyu");
-  const [voteView, setVoteView] = useState<"model" | "flat">("model");
-  const [voteRound, setVoteRound] = useState(0);
-  const [voteChoice, setVoteChoice] = useState<"a" | "b" | null>(null);
-  const [swapped, setSwapped] = useState(false);
-  const [toast, setToast] = useState("");
-
-  const visibleItems = category === "ALL" ? items : items.filter((item) => item.category === category);
-  const selectedItems = useMemo(() => items.filter((item) => selectedIds.includes(item.id)), [selectedIds]);
-  const outfitSelection = useMemo<OutfitSelection>(() => {
-    const one = (category: Item["category"]) => {
-      const item = selectedItems.find((candidate) => candidate.category === category);
-      return item ? { id:item.id, color:item.color, pattern:item.pattern } : undefined;
-    };
-    return {
-      outer: one("OUTER"),
-      top: one("TOP"),
-      bottom: one("BOTTOM"),
-      dress: one("DRESS"),
-      shoes: one("SHOES"),
-      bag: one("BAG"),
-      accessories: selectedItems.filter((item) => item.category === "ACC").map((item) => ({ id:item.id, color:item.color, pattern:item.pattern })),
-    };
-  }, [selectedItems]);
-  const createTotal = selectedItems.reduce((sum, item) => sum + item.price, 0);
-  const shopTotal = (swapped ? 32000 : 49000) + 69000 + 58000;
-
-  const go = (next: Screen) => {
-    setScreen(next);
-    setStyleChecked(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const notify = (message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
-  };
-
-  const toggleItem = (item: Item) => {
-    const current = selectedIds;
-    let next: string[];
-    if (current.includes(item.id)) next = current.filter((id) => id !== item.id);
-    else if (item.id === "ball-cap" || item.id === "bucket-hat") {
-      next = [...current.filter((id) => id !== "ball-cap" && id !== "bucket-hat"), item.id];
-    } else {
-      const conflicts = item.category === "DRESS"
-        ? ["DRESS", "TOP", "BOTTOM"]
-        : item.category === "TOP" || item.category === "BOTTOM"
-          ? [item.category, "DRESS"]
-          : [item.category];
-      const sameCategory = item.category === "ACC" ? current : current.filter((id) => !conflicts.includes(items.find((candidate) => candidate.id === id)?.category ?? "ACC"));
-      next = [...sameCategory, item.id];
-    }
-    setSelectionHistory((history) => [...history.slice(-19), current]);
-    setSelectedIds(next);
-    setStyleChecked(false);
-  };
-
-  const undoOutfit = () => {
-    setSelectionHistory((history) => {
-      if (!history.length) return history;
-      setSelectedIds(history[history.length - 1]);
-      setStyleChecked(false);
-      return history.slice(0, -1);
-    });
-  };
-
-  const resetOutfit = () => {
-    if (!selectedIds.length) return;
-    setSelectionHistory((history) => [...history.slice(-19), selectedIds]);
-    setSelectedIds([]);
-    setStyleChecked(false);
-    notify("착장을 모두 벗겼어요. 기본 이너웨어는 유지됩니다.");
-  };
-
-  const vote = (choice: "a" | "b") => {
-    if (voteChoice) return;
-    setVoteChoice(choice);
-    window.setTimeout(() => {
-      setVoteRound((current) => current + 1);
-      setVoteChoice(null);
-    }, 260);
-  };
-
-  return (
-    <main className="flow-app">
-      <header className="flow-header">
-        <button className="flow-logo" onClick={() => go("home")}><strong>MUSE PLAY</strong><span>PLAY COMMERCE</span></button>
-        <nav aria-label="핵심 사용자 흐름">
-          {(["home", "create", "vote", "shop"] as Screen[]).map((item) => <button key={item} className={screen === item ? "active" : ""} onClick={() => go(item)}>{item === "home" ? "PLAY HOME" : item === "create" ? "CREATE" : item === "vote" ? "VOTE" : "SHOP THE LOOK"}</button>)}
-        </nav>
-        <span className="flow-case-label">COMMERCE × COMMUNITY</span>
-      </header>
-
-      {screen === "home" && <section className="home-screen">
-        <section className="home-hero">
-          <div className="home-intro"><small>WHAT WOULD YOU WEAR?</small><h1>실제 판매 중인 아이템으로<br />오늘의 상황에 맞는 룩을<br />만들어보세요.</h1><p>상황을 먼저 발견하고, 상품을 가지고 놀며,<br />다른 사람의 선택을 통해 다시 쇼핑으로 돌아갑니다.</p><div><span>STYLE</span><i>→</i><span>VOTE</span><i>→</i><span>DISCOVER</span><i>→</i><span>SHOP</span></div></div>
-          <article className="today-card"><div className="today-card-top"><span>TODAY&apos;S MISSION</span><b>DATE · LIVE</b></div><small>FRIDAY · SEONGSU · 7PM</small><h2>STYLE {styleModel === "miyu" ? "MIYU" : "REN"}</h2><h3>금요일 저녁 성수 첫 데이트</h3><p>실제 판매 중인 상품으로<br />오늘의 {styleModel === "miyu" ? "미유" : "렌"}를 스타일링해주세요.</p><div className="style-model-choice"><button className={styleModel === "miyu" ? "active" : ""} onClick={() => setStyleModel("miyu")}><img src="/characters/miyu-starter/front.png" alt="스타일 모델 미유" /><span><b>MIYU</b>STYLE MODEL 01</span></button><button className={styleModel === "ren" ? "active" : ""} onClick={() => setStyleModel("ren")}><img src="/characters/ren-starter-v2/front.png" alt="스타일 모델 렌" /><span><b>REN</b>STYLE MODEL 02</span></button></div><div className="challenge-data"><span>27°C</span><span>CASUAL DATE</span><span>BUDGET ₩200,000</span></div><strong>8,241 LOOKS CREATED</strong><button onClick={() => go("create")}>START STYLING →</button></article>
-        </section>
-
-        <section className="home-actions">{[
-          ["TRENDING LOOKS","지금 사람들이 저장하는 룩","01"],["VOTE NOW","5번의 선택으로 취향 발견","02"],["BRAND CHALLENGE","신상품으로 만드는 브랜드 미션","03"],["BEAUTY PLAY","패션과 분리된 다음 PLAY TYPE","04"],
-        ].map(([title,copy,no],index) => <button key={title} onClick={() => index === 0 ? document.getElementById("trending")?.scrollIntoView({ behavior:"smooth" }) : index === 1 ? go("vote") : index === 2 ? notify("브랜드 챌린지는 포트폴리오 확장 시나리오예요") : notify("BEAUTY PLAY는 별도 플레이 타입으로 확장됩니다")}><span>{no}</span><strong>{title}</strong><small>{copy}</small><i>→</i></button>)}</section>
-
-        <section className="trending-section" id="trending"><div className="section-heading"><div><small>COMMUNITY DISCOVERY</small><h2>TRENDING LOOKS</h2></div><button onClick={() => go("vote")}>VOTE NOW →</button></div><div className="look-feed">{[
-          ["01","SOFT OFFICE","루미","12.8K","#b9a0c9"],["02","RAINY MINIMAL","하나","8.4K","#729d93"],["03","CITY DATE","소라","6.7K","#c28798"],
-        ].map(([no,label,name,likes,color]) => <article key={no} onClick={() => go("shop")}><div className="look-visual" style={{ "--look":color } as React.CSSProperties}><span>{no}</span><div className="look-person"><i /><i /><i /></div></div><small>{label}</small><strong>{name}의 LOOK</strong><span>♡ {likes}</span><button>SHOP THIS LOOK →</button></article>)}</div></section>
-
-        <section className="scene-section"><div className="section-heading"><div><small>SPECIFIC SCENES</small><h2>구체적인 제약이 참여 욕구를 만든다</h2></div></div><div className="scene-grid">{[
-          ["WORK","첫 출근인데 너무 신입처럼 보이고 싶진 않아","SEOUL · 28°C","SMART CASUAL · ₩250K"],["DATE","성수에서 저녁 먹고 와인바 가는 첫 소개팅","FRIDAY · 19:00 · 27°C","CASUAL DATE · ₩200K"],["WEDDING","호텔 결혼식인데 너무 힘준 하객룩은 싫어","INDOOR","FORMAL 70% · ₩300K"],
-        ].map(([type,title,condition,budget]) => <article key={type}><small>{type}</small><h3>{title}</h3><span>{condition}</span><b>{budget}</b><button onClick={() => go("create")}>PLAY THIS SCENE →</button></article>)}</div></section>
-      </section>}
-
-      {screen === "create" && <section className="create-screen">
-        <div className="screen-heading"><div><small>CREATE LOOK</small><h1>쇼핑하듯 탐색하고,<br />룩으로 조합하세요.</h1></div><p>실제 커머스의 상품 정보가 스타일링 인터페이스로 연결됩니다.</p></div>
-          <div className="create-toolbar"><div>{categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><span>{item}</span><small>{item === "ALL" ? items.length : items.filter((product) => product.category === item).length}</small></button>)}</div><aside>{["PRICE","COLOR","BRAND","STYLE","POPULAR ↓"].map((filter) => <button key={filter} onClick={() => notify(`${filter} 필터를 적용했어요`)}>{filter}</button>)}</aside></div>
-        <div className="create-layout">
-          <section className="shop-items"><div className="shop-items-title"><span>SHOP ITEMS</span><b>{visibleItems.length} PRODUCTS</b></div><div className="shop-grid">{visibleItems.map((item) => { const selected = selectedIds.includes(item.id); return <article key={item.id} className={selected ? "selected" : ""}><button className="product-like" onClick={() => notify(`${item.name}을 찜했어요`)}>♡ {item.likes}</button><div className="product-thumb"><img className="product-photo" src={catalogImages[item.id]} alt={`${item.brand} ${item.name}`} loading="lazy" /><span>{item.kind}</span></div><small>{item.brand}</small><h3>{item.name}</h3><strong>{won(item.price)}</strong><button className="try-button" onClick={() => toggleItem(item)}>{selected ? "REMOVE" : "TRY ON"}</button></article>; })}</div></section>
-          <aside className="look-builder"><div className="builder-top"><div><span>STYLE VIEW</span><button className={createMode === "avatar" ? "active" : ""} onClick={() => setCreateMode("avatar")}>STYLE MODEL</button><button className={createMode === "moodboard" ? "active" : ""} onClick={() => setCreateMode("moodboard")}>FLAT LAY</button></div><small>AUTOSAVED</small></div><div className="outfit-history-actions"><button onClick={undoOutfit} disabled={!selectionHistory.length}>↶ UNDO</button><button onClick={resetOutfit} disabled={!selectedIds.length}>RESET OUTFIT</button></div>
-            {createMode === "moodboard" ? (
-              <div className="moodboard-canvas"><em>FRIDAY · SEONGSU · 7PM</em>{selectedItems.map((item,index) => <div key={item.id} className={`mood-product mood-product-${index % 6}`}><i style={{ background:item.color }} /><span>{item.category}</span></div>)}<strong>FIRST<br />DATE</strong></div>
-            ) : <>
-              <div className="avatar-canvas miyu-stage">
-                <span className="miyu-label">STYLE MODEL · {styleModel.toUpperCase()}</span>
-                <CharacterViewer
-                  key={`style-model-${styleModel}`}
-                  character={styleModel}
-                  selection={outfitSelection}
-                  height={styleModel === "miyu" ? 165 : 175}
-                  weight={styleModel === "miyu" ? 55 : 70}
-                  bodyShape={50}
-                  skinTone={styleModel === "miyu" ? "#eab18c" : "#d39a78"}
-                  hairStyle={1}
-                  hairColor={styleModel === "miyu" ? "#8b3826" : "#2b2422"}
-                  eyeColor={styleModel === "miyu" ? "#43251f" : "#35424a"}
-                />
-              </div>
-              <div className="style-model-selector"><div><small>MUSE STYLE MODEL</small><strong>외모를 만드는 대신, 스타일링에 집중하세요.</strong></div><button className={styleModel === "miyu" ? "active" : ""} onClick={() => setStyleModel("miyu")}><img src="/characters/miyu-starter/front.png" alt="미유" /><span><b>MIYU</b>MODEL 01</span></button><button className={styleModel === "ren" ? "active" : ""} onClick={() => setStyleModel("ren")}><img src="/characters/ren-starter-v2/front.png" alt="렌" /><span><b>REN</b>MODEL 02</span></button></div>
-            </>}
-            {!styleChecked ? <><div className="builder-summary"><span>{selectedItems.length} ITEMS</span><strong>{won(createTotal)}</strong></div><div className="builder-actions"><button onClick={() => notify("LOOK을 저장했어요")}>SAVE LOOK</button><button onClick={() => setStyleChecked(true)}>STYLE CHECK →</button></div></> : <section className="style-check"><small>STYLE CHECK</small><h2>READY TO ENTER</h2><div><span><i>✓</i>Dress code에 잘 맞아요</span><span><i>✓</i>예산 범위 안이에요 <b>{won(createTotal)} / ₩200K</b></span><span><i>✓</i>현재 날씨에 적합해요</span></div><button onClick={() => { setVoteRound(0); go("vote"); notify("챌린지 출품이 완료됐어요"); }}>ENTER CHALLENGE →</button></section>}
-          </aside>
-        </div>
-      </section>}
-
-      {screen === "vote" && <section className="vote-screen-clean">
-        <div className="screen-heading"><div><small>QUICK VOTE · USER CURATED</small><h1>WHICH WOULD<br />YOU WEAR?</h1></div><p>유저가 직접 고른 상품 조합을 동일한 포맷으로 비교합니다.<br /><b>We vote for the style, not the person.</b></p></div>
-        {voteRound < 5 ? <>
-          <div className="vote-view-switch"><span>COMPARE AS</span><button className={voteView === "model" ? "active" : ""} onClick={() => setVoteView("model")}>STANDARD MODEL</button><button className={voteView === "flat" ? "active" : ""} onClick={() => setVoteView("flat")}>FLAT LAY</button></div>
-          <div className="vote-status"><span style={{ width:`${voteRound * 20}%` }} /><b>{voteRound + 1} / 5</b></div><h2 className="vote-scene">{votePairs[voteRound].scene}</h2>
-          <div className="vote-pair flat-vote"><button className={voteChoice === "a" ? "selected" : ""} onClick={() => vote("a")}><small>LOOK A · {votePairs[voteRound].a[0]}</small>{voteView === "model" ? <div className="standard-model-preview" style={{ "--model-look":votePairs[voteRound].a[1] } as React.CSSProperties}><img src={`/characters/${styleModel}-starter${styleModel === "ren" ? "-v2" : ""}/front.png`} alt={`표준 스타일 모델 ${styleModel}`} /><i /></div> : <FlatLook color={votePairs[voteRound].a[1]} />}<ul>{voteDetails[voteRound].a.products.map((product) => <li key={product}>{product}</li>)}</ul><span>{voteDetails[voteRound].a.user}</span><em>{won(voteDetails[voteRound].a.price)}</em><strong>[ A 선택 ]</strong></button><b>VS</b><button className={voteChoice === "b" ? "selected" : ""} onClick={() => vote("b")}><small>LOOK B · {votePairs[voteRound].b[0]}</small>{voteView === "model" ? <div className="standard-model-preview" style={{ "--model-look":votePairs[voteRound].b[1] } as React.CSSProperties}><img src={`/characters/${styleModel}-starter${styleModel === "ren" ? "-v2" : ""}/front.png`} alt={`표준 스타일 모델 ${styleModel}`} /><i /></div> : <FlatLook color={votePairs[voteRound].b[1]} tone="#765d78" />}<ul>{voteDetails[voteRound].b.products.map((product) => <li key={product}>{product}</li>)}</ul><span>{voteDetails[voteRound].b.user}</span><em>{won(voteDetails[voteRound].b.price)}</em><strong>[ B 선택 ]</strong></button></div>
-          <div className="vote-principle"><b>{voteView === "model" ? `STANDARD STYLE MODEL · ${styleModel.toUpperCase()}` : "STANDARDIZED FLAT LAY"}</b><span>두 유저의 상품 선택을 동일한 모델·포즈·화면으로 렌더링해 스타일만 평가합니다.</span></div>
-        </> : <div className="taste-layout"><section className="taste-card"><small>5 VOTES COMPLETE</small><h2>YOUR TASTE</h2><p>재미로 고른 선택이 개인화 추천 신호가 됐어요.</p>{[["MINIMAL",76],["SOFT",68],["CLASSIC",51]].map(([label,value]) => <span key={label}><b>{label}</b><i><em style={{ width:`${value}%` }} /></i><strong>{value}%</strong></span>)}</section><article className="winner-card"><div><small>8,429 PEOPLE CHOSE</small><h2>#1 SOFT OFFICE</h2><p>루미가 직접 고른 3개 상품 · ♡ 12.8K</p><button onClick={() => go("shop")}>당신 취향의 LOOK 보기 →</button></div><FlatLook color="#b9a0c9" compact /></article></div>}
-      </section>}
-
-      {screen === "shop" && <section className="shop-look-screen-clean">
-        <div className="shop-look-hero"><div><small>#1 WEEKLY WINNER</small><h1>SOFT<br />OFFICE</h1><p>루미가 직접 고른 상품 조합 · ♡ 12.8K</p><span>SHOP THIS LOOK</span></div><FlatLook color="#b9a0c9" /></div>
-        <section className="shop-look-detail"><div className="shop-detail-head"><div><small>FROM DISCOVERY TO PURCHASE</small><h2>이 룩 그대로 구매하기</h2></div><strong>{won(shopTotal)}</strong></div><div className="shop-look-list"><article className={swapped ? "swapped" : ""}><i style={{ background:swapped ? "#c4b0cf" : "#b9a0c9" }} /><div><small>{swapped ? "ALTERNATIVE · ORDINARY UNIT" : "MORNING DEW"}</small><strong>{swapped ? "Everyday Lilac Knit" : "Muted Lilac Cardigan"}</strong><span>{swapped ? "₩32,000" : "₩49,000"}</span></div><button onClick={() => setSwapped((current) => !current)}>↻ {swapped ? "원본으로 복구" : "비슷한 상품으로 교체"}</button></article><article><i style={{ background:"#34476f" }} /><div><small>BLUE HOUR</small><strong>Indigo Bootcut Denim</strong><span>₩69,000</span></div><button onClick={() => notify("BLUE HOUR 상품 상세를 열었어요")}>상품 보기</button></article><article><i style={{ background:"#76a29a" }} /><div><small>STEP BY STEP</small><strong>Square Pumps</strong><span>₩58,000</span></div><button onClick={() => notify("STEP BY STEP 상품 상세를 열었어요")}>상품 보기</button></article></div>{swapped && <div className="swap-result"><span>ORIGINAL ₩49K</span><i>→</i><strong>ALTERNATIVE ₩32K</strong><b>룩의 무드는 유지하고 ₩17K 절약</b></div>}<div className="shop-total"><span>TOTAL · 3 ITEMS</span><strong>{won(shopTotal)}</strong></div><button className="add-all" onClick={() => notify("3개 상품을 장바구니에 담았어요")}>ADD ALL TO BAG</button><button className="view-products" onClick={() => notify("상품별 상세 보기를 열었어요")}>상품별로 보기</button></section>
-      </section>}
-
-      {toast && <div className="flow-toast">{toast}</div>}
-    </main>
-  );
-}
+function Heading({kicker,title,copy}:{kicker:string;title:string;copy:string}){return <div className="heading"><div><small>{kicker}</small><h1>{title}</h1></div><p>{copy}</p></div>}
+function Title({left,right}:{left:string;right:string}){return <div className="panel-title"><b>{left}</b><strong>{right}</strong></div>}
+function Vote({round,setRound,goShop}:{round:number;setRound:(n:number)=>void;goShop:()=>void}){if(round>=5)return <div className="page"><Heading kicker="5 VOTES COMPLETE" title="YOUR TASTE" copy="Fast choices become a useful discovery signal."/><div className="taste"><section><small>YOUR TASTE</small><h2>QUIET<br/>CONTRAST</h2><p>Community decides what looks good — not an arbitrary score.</p></section><aside>{[["MINIMAL",76],["CASUAL",68],["STREET",54]].map(([x,n])=><div key={x}><b>{x}</b><i><em style={{width:`${n}%`}}/></i><span>{n}%</span></div>)}<button className="primary" onClick={goShop}>DISCOVER LOOKS FOR YOU →</button><button onClick={()=>setRound(0)}>VOTE AGAIN</button></aside></div></div>;
+ const set=VOTES[round%3];return <div className="page"><Heading kicker={`VOTE ${round+1} / 5`} title="WHICH WOULD YOU WEAR?" copy="FRIDAY SEONGSU DATE · Vote for the style, not the person."/><div className="progress"><i style={{width:`${round*20}%`}}/></div><div className="vote"><b>VS</b>{(["A","B"]as const).map(c=>{const list=byIds(c==="A"?set.a:set.b);return <article key={c}><header><span>LOOK {c}</span><b>{won(sum(list))}</b></header><FlatLay items={list}/><h2>{c==="A"?set.an:set.bn}</h2><p>Same mission · same canvas · real products</p><button onClick={()=>setRound(round+1)}>CHOOSE {c}</button></article>})}</div></div>}
+function Shop({cheaper,setCheaper,notify}:{cheaper:boolean;setCheaper:(v:boolean)=>void;notify:(s:string)=>void}){const list=byIds(["cardigan","top","denim","sneakers","bag"]);return <div className="page"><Heading kicker="SHOP THE WINNING LOOK" title="FROM COMMUNITY PICK TO CART." copy="The exact products behind the look — individually selectable or all at once."/><div className="shop"><section><small>WEEKLY WINNER · 12.8K SAVES</small><FlatLay items={list}/><h2>FRIDAY SEONGSU DATE</h2><p>SHOP THE PRODUCTS, NOT A GENERATED OUTFIT</p></section><aside><small>SHOPPABLE EDIT</small><h2>THE LOOK, ITEM BY ITEM</h2><h3>LOVE THE LOOK, NOT THE PRICE?</h3><div className="switch"><button className={!cheaper?"active":""} onClick={()=>setCheaper(false)}>ORIGINAL · ₩320K</button><button className={cheaper?"active":""} onClick={()=>setCheaper(true)}>SIMILAR · ₩185K</button></div><div className="shop-list">{list.map(i=><div key={i.id}><img src={i.image} alt=""/><span><small>{i.brand}</small><b>{i.name}</b></span><strong>{won(Math.round(i.price*(cheaper?.58:1)))}</strong><button onClick={()=>notify(`${i.name} added.`)}>ADD</button></div>)}</div><footer><span>TOTAL</span><b>{cheaper?"₩185,600":"₩320,000"}</b></footer><button className="primary" onClick={()=>notify("Complete look added to your bag.")}>ADD ALL TO BAG</button><button onClick={()=>setCheaper(!cheaper)}>{cheaper?"VIEW ORIGINAL LOOK":"FIND ALTERNATIVES →"}</button></aside></div></div>}

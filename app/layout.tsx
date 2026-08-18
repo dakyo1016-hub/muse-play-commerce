@@ -3,18 +3,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://muse-mode-fashion-play.dakyo1016.chatgpt.site"),
-  title: "MUSE PLAY — PLAY Commerce Portfolio",
-  description: "실제 커머스 상품을 상황 속에서 스타일링하고, 투표·발견·구매로 연결하는 패션·뷰티 PLAY Commerce 모듈",
+  title: "MUSE PLAY — Playable Commerce",
+  description: "실제 판매 상품으로 Flat Lay 코디를 만들고, 스타일에 투표하고, 우승 룩을 그대로 쇼핑하는 PLAY COMMERCE",
   openGraph: {
     title: "MUSE PLAY — PLAY Commerce",
-    description: "STYLE → VOTE → DISCOVER → SHOP으로 연결되는 패션·뷰티 커머스 모듈",
-    images: [{ url: "/og.png", width: 1730, height: 909, alt: "MUSE PLAY — PLAY Commerce" }],
+    description: "CREATE WITH PRODUCTS. VOTE FOR THE STYLE. SHOP THE LOOK.",
+    images: [{ url: "/og-flatlay.png", width: 1536, height: 1024, alt: "MUSE PLAY — Playable Commerce" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "MUSE PLAY — PLAY Commerce",
-    description: "실제 상품을 상황 속에서 사용해보는 새로운 쇼핑 방식",
-    images: ["/og.png"],
+    description: "상품을 보는 쇼핑에서, 상품을 가지고 노는 쇼핑으로.",
+    images: ["/og-flatlay.png"],
   },
 };
 
