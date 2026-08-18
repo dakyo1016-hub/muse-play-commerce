@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "기존 상품 데이터로 쇼핑의 선택 과정을 게임화하는 PLAY COMMERCE SYSTEM",
   openGraph: {
     title: "MUSE — Shopping as a Game",
-    description: "CREATE WITH PRODUCTS. VOTE FOR THE STYLE. SHOP THE LOOK.",
+    description: "BUILD. BATTLE. REVEAL. SHOP.",
     images: [{ url: "/og.png", width: 1536, height: 1024, alt: "MUSE — Shopping as a Game" }],
   },
   twitter: {
