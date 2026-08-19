@@ -6,9 +6,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "predev": "node scripts/assemble-godot-wasm.mjs",
     "dev": "vinext dev",
-    "prebuild": "node scripts/assemble-godot-wasm.mjs",
     "build": "vinext build",
     "start": "vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
