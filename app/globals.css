@@ -26,3 +26,8 @@
 .tryon-result>.selected-strip img{width:100%;height:calc((100% - 18px)/4);min-height:0;object-fit:contain;background:#f4f4f4;border:1px solid var(--line);border-radius:8px}
 @media(max-width:1200px){.tryon-result{--tryon-result-height:650px;grid-template-columns:minmax(0,1fr) 110px}}
 @media(max-width:720px){.tryon-result{--tryon-result-height:550px;grid-template-columns:minmax(0,1fr) 72px}}
+
+/* Full-bleed Godot canvas: remove browser letterboxing and keep the shell crisp. */
+html:has(.godot-site-host),body:has(.godot-site-host){width:100%;height:100%;overflow:hidden;background:#f8f6f8}
+.godot-site-host{width:100vw!important;height:100dvh!important;min-height:100dvh;background:#f8f6f8}
+.godot-site-host iframe{width:100vw!important;height:100dvh!important;background:#f8f6f8}
