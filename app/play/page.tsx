@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import Muse from "../page";
+import {LegacyMuse} from "../page";
 
 export const metadata:Metadata={
  title:"PLAY — MUSE Shopping as a Game",
@@ -8,4 +8,4 @@ export const metadata:Metadata={
  twitter:{card:"summary",title:"PLAY — MUSE Shopping as a Game",description:"네 개의 아이템 슬롯을 채우고 스타일 배틀을 시작하세요.",images:[]},
 };
 
-export default function PlayPage(){return <Muse initialScreen="build"/>}
+export default function PlayPage(){return <LegacyMuse initialScreen="build"/>}
