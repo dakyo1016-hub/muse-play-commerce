@@ -55,16 +55,22 @@ async function visitorHash(request:Request){
  return base64Url(digest);
 }
 
-async function reserveDailyUse(request:Request){
+const VISITOR_DAILY_LIMIT=20;
+const GLOBAL_DAILY_LIMIT=300;
+
+async function getDailyUsage(request:Request){
  const db=getDb();
  const day=new Date().toISOString().slice(0,10);
  const hash=await visitorHash(request);
  const [row]=await db.select().from(tryOnUsage).where(and(eq(tryOnUsage.visitorHash,hash),eq(tryOnUsage.usageDay,day))).limit(1);
  const [globalRow]=await db.select().from(tryOnUsage).where(and(eq(tryOnUsage.visitorHash,"__global__"),eq(tryOnUsage.usageDay,day))).limit(1);
- if((row?.count??0)>=3||(globalRow?.count??0)>=100)return false;
+ return {db,day,hash,visitorCount:row?.count??0,globalCount:globalRow?.count??0};
+}
+
+async function recordSuccessfulUse(usage:Awaited<ReturnType<typeof getDailyUsage>>){
+ const {db,day,hash}=usage;
  await db.insert(tryOnUsage).values({visitorHash:hash,usageDay:day,count:1}).onConflictDoUpdate({target:[tryOnUsage.visitorHash,tryOnUsage.usageDay],set:{count:sql`${tryOnUsage.count} + 1`,updatedAt:sql`CURRENT_TIMESTAMP`}});
  await db.insert(tryOnUsage).values({visitorHash:"__global__",usageDay:day,count:1}).onConflictDoUpdate({target:[tryOnUsage.visitorHash,tryOnUsage.usageDay],set:{count:sql`${tryOnUsage.count} + 1`,updatedAt:sql`CURRENT_TIMESTAMP`}});
- return true;
 }
 
 export async function POST(request:Request){
@@ -77,7 +83,9 @@ export async function POST(request:Request){
   if(selected.length<2)return Response.json({error:"최소 두 개 이상의 의류 아이템을 선택해주세요."},{status:400});
   const runtime=env as unknown as Record<string,string|undefined>;
   if(!runtime.GOOGLE_SERVICE_ACCOUNT_JSON)return Response.json({error:"AI_SETUP_REQUIRED",message:"Google Cloud 연결이 아직 필요합니다."},{status:503});
-  if(!await reserveDailyUse(request))return Response.json({error:"오늘의 AI 피팅 생성 한도에 도달했어요. 내일 다시 시도해주세요."},{status:429});
+  const usage=await getDailyUsage(request);
+  if(usage.visitorCount>=VISITOR_DAILY_LIMIT)return Response.json({error:`오늘 이 접속 환경의 AI 피팅 ${VISITOR_DAILY_LIMIT}회를 모두 사용했어요.`},{status:429});
+  if(usage.globalCount>=GLOBAL_DAILY_LIMIT)return Response.json({error:"오늘의 MUSE 전체 AI 피팅 한도에 도달했어요."},{status:429});
   const [,personMime="image/jpeg",personData]=body.personImage.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/)??[];
   if(!personData)return Response.json({error:"지원하지 않는 사진 형식입니다."},{status:400});
   const assets=(env as unknown as {ASSETS?:{fetch(request:Request):Promise<Response>}}).ASSETS;
@@ -99,7 +107,8 @@ export async function POST(request:Request){
   if(!response.ok)throw new Error(json.error?.message??"AI 착장 생성에 실패했습니다.");
   const image=json.candidates?.flatMap(candidate=>candidate.content?.parts??[]).find(part=>part.inlineData?.data)?.inlineData;
   if(!image?.data)throw new Error("생성된 이미지가 반환되지 않았습니다.");
-  return Response.json({image:`data:${image.mimeType??"image/png"};base64,${image.data}`,model:"gemini-3.1-flash-image",remaining:"오늘 최대 3회"});
+  await recordSuccessfulUse(usage);
+  return Response.json({image:`data:${image.mimeType??"image/png"};base64,${image.data}`,model:"gemini-3.1-flash-image",remaining:`오늘 ${Math.max(0,VISITOR_DAILY_LIMIT-usage.visitorCount-1)}회 남음`});
  }catch(error){
   const message=error instanceof Error?error.message:"예상하지 못한 오류가 발생했습니다.";
   return Response.json({error:message},{status:500});
