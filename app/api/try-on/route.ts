@@ -80,8 +80,10 @@ export async function POST(request:Request){
   if(!await reserveDailyUse(request))return Response.json({error:"오늘의 AI 피팅 생성 한도에 도달했어요. 내일 다시 시도해주세요."},{status:429});
   const [,personMime="image/jpeg",personData]=body.personImage.match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/)??[];
   if(!personData)return Response.json({error:"지원하지 않는 사진 형식입니다."},{status:400});
+  const assets=(env as unknown as {ASSETS?:{fetch(request:Request):Promise<Response>}}).ASSETS;
   const productParts=await Promise.all(selected.map(async item=>{
-   const response=await fetch(new URL(item.path,request.url));
+   const assetRequest=new Request(new URL(item.path,request.url));
+   const response=assets?await assets.fetch(assetRequest):await fetch(assetRequest);
    if(!response.ok)throw new Error("상품 이미지를 불러오지 못했습니다.");
    return {inlineData:{mimeType:response.headers.get("content-type")??"image/jpeg",data:toBase64(await response.arrayBuffer())}};
   }));
