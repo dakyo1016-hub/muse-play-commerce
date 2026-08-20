@@ -140,5 +140,5 @@ export function LegacyMuse({initialScreen="commerce"}:{initialScreen?:Screen}){
 }
 
 export default function GodotSite(){
- return <main className="godot-site-host"><iframe src="/game/muse-v52.html" title="MUSE — Shopping as a Game" allow="autoplay; fullscreen; gamepad" loading="eager"/><a className="godot-tryon-entry" href="/try-on" target="_top"><span>NEW</span><b>AI 피팅</b><i>→</i></a></main>;
+ return <main className="godot-site-host"><iframe src="/game/muse-v53.html" title="MUSE — Shopping as a Game" allow="autoplay; fullscreen; gamepad" loading="eager"/><a className="godot-tryon-entry" href="/try-on" target="_top"><span>NEW</span><b>AI 피팅</b><i>→</i></a></main>;
 }
