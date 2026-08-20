@@ -44,12 +44,12 @@ function ItemsPage(){
 function RankingPage(){
  const[range,setRange]=useState<"WEEKLY"|"TODAY">("WEEKLY");
  const looks=range==="WEEKLY"?[
-  {rank:"01",name:"SOFT CITY DATE",score:96,image:"/miyu-mascot-3d-v4.png",tags:"#미니멀 #Y2K"},
-  {rank:"02",name:"CLEAN VINTAGE",score:92,image:"/ren-mascot-3d-final.png",tags:"#빈티지 #클린"},
+  {rank:"01",name:"SOFT CITY DATE",score:96,image:"/miyu-fullbody-v5.png",tags:"#미니멀 #Y2K"},
+  {rank:"02",name:"CLEAN VINTAGE",score:92,image:"/ren-fullbody-v5.png",tags:"#빈티지 #클린"},
   {rank:"03",name:"SILVER STREET",score:89,image:"/catalog/street-24.jpg",tags:"#테크 #스트릿"},
  ]:[
-  {rank:"01",name:"LILAC AFTERNOON",score:94,image:"/miyu-mascot-3d-v4.png",tags:"#소프트 #데이트"},
-  {rank:"02",name:"NAVY RECORD CLUB",score:91,image:"/ren-mascot-3d-final.png",tags:"#프레피 #빈티지"},
+  {rank:"01",name:"LILAC AFTERNOON",score:94,image:"/miyu-fullbody-v5.png",tags:"#소프트 #데이트"},
+  {rank:"02",name:"NAVY RECORD CLUB",score:91,image:"/ren-fullbody-v5.png",tags:"#프레피 #빈티지"},
   {rank:"03",name:"CREAM LAYER",score:87,image:"/catalog/women-01.jpg",tags:"#미니멀 #레이어드"},
  ];
  return <><CommerceNav active="ranking"/><main className="section-page"><Header eyebrow="STYLE RANKING · LIVE" title="지금 가장 많이 선택된 LOOK" copy="유저의 선택과 태그 매치 점수를 기준으로 집계된 MUSE PLAY 랭킹입니다."/><div className="ranking-tabs"><button className={range==="WEEKLY"?"active":""} onClick={()=>setRange("WEEKLY")}>WEEKLY</button><button className={range==="TODAY"?"active":""} onClick={()=>setRange("TODAY")}>TODAY</button></div><section className="ranking-grid">{looks.map(look=><article key={look.rank}><span>RANK {look.rank}</span><img src={look.image} alt={look.name}/><div><small>{look.tags}</small><h2>{look.name}</h2><strong>{look.score}<i>% MATCH</i></strong><a href="/play">이 LOOK에 도전 →</a></div></article>)}</section></main></>
